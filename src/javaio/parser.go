@@ -1,38 +1,33 @@
 package javaio
 
+import "bufio"
 import "fmt"
 import "unicode/utf8"
 
-// Packets
+// Clientbound packets
 
-// TODO: this system needs to be switched to be stream-oriented rather than slice-oriented
+/**  Will not be available for the foreseeable future unless contributed by others.  **/
 
-func ParsePacketUncompressed(data []byte) (result interface{}, bytesProcessed int, err error) {
-	length, bytes, err := ParseVarInt(data[bytesProcessed:])
+// Serverbound packets
+
+func ParseServerboundPacketUncompressed(data *bufio.Reader) (result interface{}, err error) {
+	length, err := ParseVarInt(data)
 	_ = length
-	bytesProcessed += bytes
-
 	if err != nil {
 		return
 	}
 
-	packetId, bytes, err := ParseVarInt(data[bytesProcessed:])
-	bytesProcessed += bytes
-
+	packetId, err := ParseVarInt(data)
 	if err != nil {
 		return
 	}
 
 	if packetId == 0 {
-		if len(data) == 0 {
+		if _, err := data.Peek(1); err == nil {
+			// No more data in this packet
 			panic("Not yet implemented!!")
-			// result, bytes, err := ParseRequest(data[bytesProcessed:])
-			// bytesProcessed += bytes
 		} else {
-			result_, bytes, err_ := ParseHandshake(data[bytesProcessed:])
-			result = result_
-			err = err_
-			bytesProcessed += bytes
+			result, err = ParseHandshake(data)
 		}
 	} else {
 		err = &UnsupportedPayloadError { fmt.Sprintf("Unrecognized packet id %d", packetId) }
@@ -41,31 +36,27 @@ func ParsePacketUncompressed(data []byte) (result interface{}, bytesProcessed in
 	return
 }
 
-func ParsePacketCompressed(data []byte) (result interface{}, bytesProcessed int, err error) {
-	panic("ParsePacketCompressed not implemented")
+func ParseServerboundPacketCompressed(data []byte) (result interface{}, bytesProcessed int, err error) {
+	panic("ParseServerboundPacketCompressed not implemented")
 }
 
-func ParseHandshake(data []byte) (result Handshake, bytesProcessed int, err error) {
-	protocolVersion, bytes, err := ParseVarInt(data[bytesProcessed:])
-	bytesProcessed += bytes
+func ParseHandshake(data *bufio.Reader) (result Handshake, err error) {
+	protocolVersion, err := ParseVarInt(data)
 	if err != nil {
 		return
 	}
 
-	serverAddress, bytes, err := ParseString(data[bytesProcessed:], 32767)
-	bytesProcessed += bytes
+	serverAddress, err := ParseString(data, 256)
 	if err != nil {
 		return
 	}
 
-	serverPort, bytes, err := ParseUnsignedShort(data[bytesProcessed:])
-	bytesProcessed += bytes
+	serverPort, err := ParseUnsignedShort(data)
 	if err != nil {
 		return
 	}
 
-	nextState, bytes, err := ParseVarInt(data[bytesProcessed:])
-	bytesProcessed += bytes
+	nextState, err := ParseVarInt(data)
 	if err != nil {
 		return
 	}
@@ -80,14 +71,16 @@ func ParseHandshake(data []byte) (result Handshake, bytesProcessed int, err erro
 	return
 }
 
-// Basic components
+// Building blocks
 
-func ParseVarInt(data []byte) (result int, bytesProcessed int, err error) {
+func ParseVarInt(data *bufio.Reader) (result int, err error) {
 	maxLength := 5
 	idx := 0
 
 	for {
-		if idx >= len(data) {
+		byte_, readErr := data.ReadByte()
+
+		if readErr != nil {
 			err = &MalformedPacketError { "VarInt ended abruptly" }
 			return
 		} else if idx >= maxLength {
@@ -95,7 +88,6 @@ func ParseVarInt(data []byte) (result int, bytesProcessed int, err error) {
 			return
 		}
 
-		byte_ := data[idx]
 		value := byte_ & 0b01111111
 		result |= int(uint(value) << uint(7 * idx))
 		idx++
@@ -105,47 +97,49 @@ func ParseVarInt(data []byte) (result int, bytesProcessed int, err error) {
 		}
 	}
 
-	bytesProcessed = idx
 	return
 }
 
-func ParseUnsignedShort(data []byte) (result uint16, bytesProcessed int, err error) {
-	if len(data) < 2 {
+func ParseUnsignedShort(data *bufio.Reader) (result uint16, err error) {
+	var buf [2]byte
+	n, _ := data.Read(buf[:])
+
+	if n < 2 {
 		err = &MalformedPacketError { "Unsigned short ended abruptly" }
 		return
 	}
 
-	result = uint16(data[1]) + 256 * uint16(data[0])
-	bytesProcessed = 2
+	result = uint16(buf[1]) + 256 * uint16(buf[0])
 	return
 }
 
-func ParseString(data []byte, maxRuneCount int) (result string, bytesProcessed int, err error) {
+func ParseString(data *bufio.Reader, maxRuneCount int) (result string, err error) {
 	maxStrLength := maxRuneCount * 4
-	strLength, varIntLength, err := ParseVarInt(data)
-	packetLength := strLength + varIntLength
+	strLength, err := ParseVarInt(data)
 
 	if err != nil {
 		return
 	}
 
 	if strLength > maxStrLength {
-		err = &MalformedPacketError { "String exceeded max rune count" }
+		err = &MalformedPacketError { "String exceeded max rune count" } //*
 		return
 	}
 
-	result = string(data[varIntLength:packetLength])
-
-	if len(result) != strLength {
+	buf := make([]byte, strLength)
+	n, _ := data.Read(buf)
+	
+	if (n != strLength) {
 		err = &MalformedPacketError { "String ended abruptly" }
 		return
 	}
+
+	result = string(buf)
 
 	if utf8.RuneCountInString(result) > maxRuneCount {
 		err = &MalformedPacketError { "String exceeded max rune count" }
 		return
 	}
 
-	bytesProcessed = packetLength
 	return
 }
