@@ -1,1 +1,3 @@
-# go-omcp
+# Open Minecraft Protocol (Golang)
+
+
