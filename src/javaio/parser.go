@@ -4,13 +4,13 @@ import "bufio"
 import "fmt"
 import "unicode/utf8"
 
-// Clientbound packets
+/**  Clientbound packet parsing will not be available for the foreseeable future unless contributed by others.  **/
 
-/**  Will not be available for the foreseeable future unless contributed by others.  **/
+///////////////////////////////////////
+// Parser entry
+///////////////////////////////////////
 
-// Serverbound packets
-
-func ParseServerboundPacketUncompressed(data *bufio.Reader) (result interface{}, err error) {
+func ParseServerboundPacketUncompressed(data *bufio.Reader, state int) (result interface{}, err error) {
 	length, err := ParseVarInt(data)
 	_ = length
 	if err != nil {
@@ -22,15 +22,29 @@ func ParseServerboundPacketUncompressed(data *bufio.Reader) (result interface{},
 		return
 	}
 
-	if packetId == 0 {
-		if _, err := data.Peek(1); err == nil {
-			// No more data in this packet
-			panic("Not yet implemented!!")
-		} else {
+	switch state {
+	case StateHandshaking:
+		switch packetId {
+		case 0:
 			result, err = ParseHandshake(data)
+		default:
+			err = &UnsupportedPayloadError { fmt.Sprintf("Unrecognized packet id %d", packetId) }
 		}
-	} else {
-		err = &UnsupportedPayloadError { fmt.Sprintf("Unrecognized packet id %d", packetId) }
+	case StateStatus:
+		switch packetId {
+		case 0:
+			result, err = ParseStatusRequest(data)
+		case 1:
+			result, err = ParsePing(data)
+		default:
+			err = &UnsupportedPayloadError { fmt.Sprintf("Unrecognized packet id %d", packetId) }
+		}
+	case StateLogin:
+		panic("Not implemented")
+	case StatePlay:
+		panic("Not implemented")
+	default:
+		panic("State does not match one of non-invalid predefined enum values")
 	}
 
 	return
@@ -39,6 +53,10 @@ func ParseServerboundPacketUncompressed(data *bufio.Reader) (result interface{},
 func ParseServerboundPacketCompressed(data []byte) (result interface{}, bytesProcessed int, err error) {
 	panic("ParseServerboundPacketCompressed not implemented")
 }
+
+///////////////////////////////////////
+// Packets for handshake state
+///////////////////////////////////////
 
 func ParseHandshake(data *bufio.Reader) (result Handshake, err error) {
 	protocolVersion, err := ParseVarInt(data)
@@ -56,8 +74,19 @@ func ParseHandshake(data *bufio.Reader) (result Handshake, err error) {
 		return
 	}
 
-	nextState, err := ParseVarInt(data)
+	nextStateId, err := ParseVarInt(data)
 	if err != nil {
+		return
+	}
+
+	var nextState int
+
+	if (nextStateId == 1) {
+		nextState = StateStatus
+	} else if (nextStateId == 2) {
+		nextState = StateLogin
+	} else {
+		err = &MalformedPacketError { fmt.Sprintf("Unrecognized next state id %d in handshake", nextStateId) }
 		return
 	}
 
@@ -71,7 +100,35 @@ func ParseHandshake(data *bufio.Reader) (result Handshake, err error) {
 	return
 }
 
-// Building blocks
+///////////////////////////////////////
+// Packets for status state
+///////////////////////////////////////
+
+func ParseStatusRequest(data *bufio.Reader) (result StatusRequest, err error) {
+	result = StatusRequest{}
+	return
+}
+
+func ParsePing(data *bufio.Reader) (result Ping, err error) {
+	payload, err := ParseLong(data)
+	if err != nil {
+		return
+	}
+
+	result = Ping {
+		Payload: payload,
+	}
+
+	return
+}
+
+///////////////////////////////////////
+// Packets for play state
+///////////////////////////////////////
+
+///////////////////////////////////////
+// Basic types
+///////////////////////////////////////
 
 func ParseVarInt(data *bufio.Reader) (result int, err error) {
 	maxLength := 5
@@ -100,11 +157,28 @@ func ParseVarInt(data *bufio.Reader) (result int, err error) {
 	return
 }
 
-func ParseUnsignedShort(data *bufio.Reader) (result uint16, err error) {
-	var buf [2]byte
+func ParseLong(data *bufio.Reader) (result int64, err error) {
+	const size = 4
+
+	var buf [size]byte
 	n, _ := data.Read(buf[:])
 
-	if n < 2 {
+	if n < size {
+		err = &MalformedPacketError { "Long ended abruptly" }
+		return
+	}
+
+	result = int64(buf[3]) + 256 * int64(buf[2]) + 65536 * int64(buf[1]) + 4294967296 * int64(buf[0])
+	return
+}
+
+func ParseUnsignedShort(data *bufio.Reader) (result uint16, err error) {
+	const size = 2
+
+	var buf [size]byte
+	n, _ := data.Read(buf[:])
+
+	if n < size {
 		err = &MalformedPacketError { "Unsigned short ended abruptly" }
 		return
 	}

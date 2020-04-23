@@ -1,6 +1,16 @@
 package javaio
 
-// Complex types
+// States
+
+const (
+	StateInvalid = iota
+	StateHandshaking = iota
+	StateStatus = iota
+	StateLogin = iota
+	StatePlay = iota
+)
+
+// Handshake packets
 
 type Handshake struct {
 	ProtocolVersion int
@@ -9,4 +19,16 @@ type Handshake struct {
 	NextState int
 }
 
-// Basic types
+type LegacyStatusRequest struct {}
+
+// Status packets
+
+type StatusRequest struct {}
+
+type Ping struct {
+	Payload int64
+}
+
+// Login packets
+
+// Play packets

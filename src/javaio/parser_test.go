@@ -4,6 +4,50 @@ import "testing"
 import "bufio"
 import "bytes"
 
+///////////////////////////////////////
+// Parser entry
+///////////////////////////////////////
+
+func TestParseServerboundPacketUncompressed(t *testing.T) {
+	t.Error("todo")
+}
+
+func TestParseServerboundPacketCompressed(t *testing.T) {
+	t.Error("todo")
+}
+
+///////////////////////////////////////
+// Packets for handshake state
+///////////////////////////////////////
+
+func TestParseHandshake(t *testing.T) {
+	t.Error("todo")
+}
+
+///////////////////////////////////////
+// Packets for status state
+///////////////////////////////////////
+
+func TestParseStatusRequest(t *testing.T) {
+	t.Error("todo")
+}
+
+func TestParsePing(t *testing.T) {
+	t.Error("todo")
+}
+
+///////////////////////////////////////
+// Packets for login state
+///////////////////////////////////////
+
+///////////////////////////////////////
+// Packets for play state
+///////////////////////////////////////
+
+///////////////////////////////////////
+// Basic types
+///////////////////////////////////////
+
 func TestParseVarInt(t *testing.T) {
 	iomap := []struct {
 		input []byte
@@ -46,4 +90,16 @@ func TestParseVarInt(t *testing.T) {
 			t.Errorf("Expected MalformedPacketError for mapping %d but instead got: %v", i, err)
 		}
 	}
+}
+
+func TestLong(t *testing.T) {
+	t.Error("todo")
+}
+
+func TestUnsignedShort(t *testing.T) {
+	t.Error("todo")
+}
+
+func TestParseString(t *testing.T) {
+	t.Error("todo")
 }
