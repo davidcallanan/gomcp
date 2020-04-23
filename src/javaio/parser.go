@@ -12,10 +12,12 @@ import "unicode/utf8"
 
 func ParseServerboundPacketUncompressed(data *bufio.Reader, state int) (result interface{}, err error) {
 	length, err := ParseVarInt(data)
-	_ = length
 	if err != nil {
 		return
 	}
+
+	// Ensure one does not read past the length of the packet
+	data = newReaderSlice(data, length)
 
 	packetId, err := ParseVarInt(data)
 	if err != nil {
