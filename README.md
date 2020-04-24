@@ -1,3 +1,3 @@
-# Open Minecraft Protocol (Golang)
+# Go Minecraft Protocol
 
 
