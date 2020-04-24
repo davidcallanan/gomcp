@@ -144,7 +144,6 @@ func EmitStatusResponse(status StatusResponse, result *bufio.Writer) (err error)
 		return
 	}
 
-	println(string(jsonBytes))
 	return
 }
 
@@ -166,9 +165,11 @@ func EmitPong(pong Pong, result *bufio.Writer) (err error) {
 ///////////////////////////////////////
 
 func EmitLong(value int64, result *bufio.Writer) (err error) {
-	const size = 4
-
 	result.Write([]byte {
+		byte(value >> 512),
+		byte(value >> 256),
+		byte(value >> 128),
+		byte(value >> 64),
 		byte(value >> 32),
 		byte(value >> 16),
 		byte(value >> 8),

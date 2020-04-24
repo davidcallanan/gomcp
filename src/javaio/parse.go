@@ -1,7 +1,7 @@
 package javaio
 
-import "bufio"
 import "fmt"
+import "bufio"
 import "unicode/utf8"
 
 /**  Clientbound packet parsing will not be available for the foreseeable future unless contributed by others.  **/
@@ -160,7 +160,7 @@ func ParseVarInt(data *bufio.Reader) (result int32, err error) {
 }
 
 func ParseLong(data *bufio.Reader) (result int64, err error) {
-	const size = 4
+	const size = 8
 
 	var buf [size]byte
 	n, _ := data.Read(buf[:])
@@ -170,7 +170,11 @@ func ParseLong(data *bufio.Reader) (result int64, err error) {
 		return
 	}
 
-	result = int64(buf[3]) + 256 * int64(buf[2]) + 65536 * int64(buf[1]) + 4294967296 * int64(buf[0])
+	for exp := 0; exp < size; exp++ {
+		idx := size - exp - 1
+		result += int64(buf[idx]) * 1 << exp
+	}
+
 	return
 }
 
