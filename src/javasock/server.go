@@ -72,17 +72,17 @@ func (server *Server) ProcessHandshake(client *client, handshake javaio.Handshak
 }
 
 func (server *Server) ProcessStatusRequest(client *client, _ javaio.StatusRequest) {
-	javaio.EmitStatusResponse(javaio.StatusResponse {
+	javaio.EmitClientboundPacketUncompressed(&javaio.StatusResponse {
 		Description: "Hello, World!",
 		VersionText: "1.20",
 		VersionProtocol: 578,
 		MaxPlayers: 20,
 		OnlinePlayers: 0,
-	}, client.output)
+	}, client.state, client.output)
 }
 
 func (server *Server) ProcessPing(client *client, ping javaio.Ping) {
-	javaio.EmitPong(javaio.Pong {
+	javaio.EmitClientboundPacketUncompressed(&javaio.Pong {
 		Payload: ping.Payload,
-	}, client.output)
+	}, client.state, client.output)
 }

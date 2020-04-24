@@ -19,7 +19,7 @@ type StatusResponse struct {
 	Description string
 	FaviconPng []byte
 	VersionText string
-	VersionProtocol int
+	VersionProtocol int32
 	MaxPlayers int
 	OnlinePlayers int
 	PlayerSample []struct {
