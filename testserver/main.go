@@ -22,7 +22,7 @@ func main() {
 
 		fmt.Println("Accepted a connection!")
 
-		server.AddConnection(connection, func() {
+		server.AddConnection(connection, connection, func() {
 			connection.Close()
 		})
 	}

@@ -1,0 +1,50 @@
+package javaio
+
+import "bufio"
+
+/**  Serverbound packet emission will not be available for the foreseeable future unless contributed by others.  **/
+
+///////////////////////////////////////
+// Parser entry
+///////////////////////////////////////
+
+///////////////////////////////////////
+// Packets for handshake state
+///////////////////////////////////////
+
+/**  There are no clientbound packets in this state  **/
+
+///////////////////////////////////////
+// Packets for status state
+///////////////////////////////////////
+
+func EmitPong(pong Pong, result *bufio.Writer) (err error) {
+	err = EmitLong(pong.Payload, result)
+	return
+}
+
+///////////////////////////////////////
+// Packets for login state
+///////////////////////////////////////
+
+///////////////////////////////////////
+// Packets for play state
+///////////////////////////////////////
+
+///////////////////////////////////////
+// Basic types
+///////////////////////////////////////
+
+func EmitLong(num int64, result *bufio.Writer) (err error) {
+	const size = 4
+
+	result.Write([]byte {
+		byte(num >> 32),
+		byte(num >> 16),
+		byte(num >> 8),
+		byte(num),
+	})
+
+	err = nil
+	return
+}

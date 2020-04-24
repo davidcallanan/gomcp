@@ -1,15 +1,5 @@
 package javaio
 
-// States
-
-const (
-	StateInvalid = iota
-	StateHandshaking = iota
-	StateStatus = iota
-	StateLogin = iota
-	StatePlay = iota
-)
-
 // Handshake packets
 
 type Handshake struct {
@@ -26,6 +16,10 @@ type LegacyStatusRequest struct {}
 type StatusRequest struct {}
 
 type Ping struct {
+	Payload int64
+}
+
+type Pong struct {
 	Payload int64
 }
 
