@@ -3,7 +3,7 @@ package javaio
 // Handshake packets
 
 type Handshake struct {
-	ProtocolVersion int
+	ProtocolVersion int32
 	ServerAddress string
 	ServerPort uint16
 	NextState int
@@ -14,6 +14,19 @@ type LegacyStatusRequest struct {}
 // Status packets
 
 type StatusRequest struct {}
+
+type StatusResponse struct {
+	Description string
+	FaviconPng []byte
+	VersionText string
+	VersionProtocol int
+	MaxPlayers int
+	OnlinePlayers int
+	PlayerSample []struct {
+		Name string
+		Uuid string
+	}
+}
 
 type Ping struct {
 	Payload int64

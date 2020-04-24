@@ -55,13 +55,13 @@ func (server *Server) handleReceive(client *client) {
 		}
 	}
 
-	switch p := packet.(type) {
+	switch packet := packet.(type) {
 	case javaio.Handshake:
-		server.ProcessHandshake(client, p)
+		server.ProcessHandshake(client, packet)
 	case javaio.StatusRequest:
-		println("Ignored status request")
+		server.ProcessStatusRequest(client, packet)
 	case javaio.Ping:
-		server.ProcessPing(client, p)
+		server.ProcessPing(client, packet)
 	default:
 		panic("Unrecognized packet type")
 	}
@@ -69,6 +69,16 @@ func (server *Server) handleReceive(client *client) {
 
 func (server *Server) ProcessHandshake(client *client, handshake javaio.Handshake) {
 	client.state = handshake.NextState
+}
+
+func (server *Server) ProcessStatusRequest(client *client, _ javaio.StatusRequest) {
+	javaio.EmitStatusResponse(javaio.StatusResponse {
+		Description: "Hello, World!",
+		VersionText: "1.20",
+		VersionProtocol: 578,
+		MaxPlayers: 20,
+		OnlinePlayers: 0,
+	}, client.output)
 }
 
 func (server *Server) ProcessPing(client *client, ping javaio.Ping) {

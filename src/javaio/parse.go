@@ -17,7 +17,7 @@ func ParseServerboundPacketUncompressed(data *bufio.Reader, state int) (result i
 	}
 
 	// Ensure one does not read past the length of the packet
-	data = newReaderSlice(data, length)
+	data = newReaderSlice(data, int(length))
 
 	packetId, err := ParseVarInt(data)
 	if err != nil {
@@ -132,7 +132,7 @@ func ParsePing(data *bufio.Reader) (result Ping, err error) {
 // Basic types
 ///////////////////////////////////////
 
-func ParseVarInt(data *bufio.Reader) (result int, err error) {
+func ParseVarInt(data *bufio.Reader) (result int32, err error) {
 	maxLength := 5
 	idx := 0
 
@@ -148,7 +148,7 @@ func ParseVarInt(data *bufio.Reader) (result int, err error) {
 		}
 
 		value := byte_ & 0b01111111
-		result |= int(uint(value) << uint(7 * idx))
+		result |= int32(uint(value) << uint(7 * idx))
 		idx++
 
 		if byte_ & 0b10000000 == 0 {
@@ -197,7 +197,7 @@ func ParseString(data *bufio.Reader, maxRuneCount int) (result string, err error
 		return
 	}
 
-	if strLength > maxStrLength {
+	if int(strLength) > maxStrLength {
 		err = &MalformedPacketError { "String exceeded max rune count" } //*
 		return
 	}
@@ -205,7 +205,7 @@ func ParseString(data *bufio.Reader, maxRuneCount int) (result string, err error
 	buf := make([]byte, strLength)
 	n, _ := data.Read(buf)
 	
-	if (n != strLength) {
+	if (n != int(strLength)) {
 		err = &MalformedPacketError { "String ended abruptly" }
 		return
 	}
