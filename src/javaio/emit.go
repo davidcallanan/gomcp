@@ -13,9 +13,10 @@ import "encoding/base64"
 
 func EmitClientboundPacketUncompressed(packet interface{}, state int, output *bufio.Writer) (err error) {
 	var packetId int32 = -1
-	packetIdBuf := new(bytes.Buffer)
-	dataBuf := new(bytes.Buffer)
-	buf := bufio.NewWriter(dataBuf)
+	var packetIdBuf bytes.Buffer
+	var dataBuf bytes.Buffer
+	packetIdWriter := bufio.NewWriter(&packetIdBuf)
+	dataWriter := bufio.NewWriter(&dataBuf)
 
 	switch state {
 	case StateHandshaking:
@@ -25,10 +26,10 @@ func EmitClientboundPacketUncompressed(packet interface{}, state int, output *bu
 		switch packet := packet.(type) {
 		case *StatusResponse:
 			packetId = 0
-			err = EmitStatusResponse(*packet, buf)
+			err = EmitStatusResponse(*packet, dataWriter)
 		case *Pong:
 			packetId = 1
-			err = EmitPong(*packet, buf)
+			err = EmitPong(*packet, dataWriter)
 		default:
 			err = &WrongStateError { "Packet can not be emitted in the current state" }
 			panic(err)
@@ -49,12 +50,14 @@ func EmitClientboundPacketUncompressed(packet interface{}, state int, output *bu
 		return
 	}
 
-	err = EmitVarInt(packetId, bufio.NewWriter(packetIdBuf))
+	err = EmitVarInt(packetId, packetIdWriter)
 	
 	if err != nil {
 		return
 	}
 
+	dataWriter.Flush()
+	packetIdWriter.Flush()
 	length := packetIdBuf.Len() + dataBuf.Len()
 	lengthInt32 := int32(length)
 
@@ -70,7 +73,7 @@ func EmitClientboundPacketUncompressed(packet interface{}, state int, output *bu
 
 	output.Write(packetIdBuf.Bytes())
 	output.Write(dataBuf.Bytes())
-
+	output.Flush()
 	return
 }
 
