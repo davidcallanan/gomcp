@@ -9,8 +9,6 @@ type Handshake struct {
 	NextState int
 }
 
-type LegacyStatusRequest struct {}
-
 // Status packets
 
 type StatusRequest struct {}
