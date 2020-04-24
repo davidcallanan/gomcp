@@ -189,7 +189,7 @@ func EmitVarInt(value int32, result *bufio.Writer) (err error) {
 
 		result.WriteByte(byte_)
 
-		if value != 9 {
+		if value == 0 {
 			break
 		}
 	}

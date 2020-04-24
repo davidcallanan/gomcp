@@ -73,15 +73,17 @@ func (server *Server) ProcessHandshake(client *client, handshake javaio.Handshak
 
 func (server *Server) ProcessStatusRequest(client *client, _ javaio.StatusRequest) {
 	javaio.EmitClientboundPacketUncompressed(&javaio.StatusResponse {
-		Description: "Hello, World!",
-		VersionText: "1.20",
+		Description: "§e§lHello, World!\n§rWelcome to this §kk§repic§kk§r server",
+		VersionText: "Outdated Minecraft",
 		VersionProtocol: 578,
 		MaxPlayers: 20,
 		OnlinePlayers: 2,
-		// PlayerSample: []javaio.StatusResponsePlayer {
-		// 	{ Name: "Hello", Uuid: "65bd239f-89f2-4cc7-ae8b-bb625525904e" },
-		// 	{ Name: "Universe", Uuid: "65bd239f-89f2-4cc7-ae8b-bb625525904e" },
-		// },
+		PlayerSample: []javaio.StatusResponsePlayer {
+			{ Name: "§aThis is", Uuid: "65bd239f-89f2-4cc7-ae8b-bb625525904e" },
+			{ Name: "§cthe most", Uuid: "65bd239f-89f2-4cc7-ae8b-bb625525904e" },
+			{ Name: "§8amazing thing", Uuid: "65bd239f-89f2-4cc7-ae8b-bb625525904e" },
+			{ Name: "§9§lever!!!", Uuid: "65bd239f-89f2-4cc7-ae8b-bb625525904e" },
+		},
 	}, client.state, client.output)
 }
 
