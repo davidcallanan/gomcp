@@ -22,10 +22,12 @@ type StatusResponse struct {
 	VersionProtocol int32
 	MaxPlayers int
 	OnlinePlayers int
-	PlayerSample []struct {
-		Name string
-		Uuid string
-	}
+	PlayerSample []StatusResponsePlayer
+}
+
+type StatusResponsePlayer struct {
+	Name string
+	Uuid string
 }
 
 type Ping struct {

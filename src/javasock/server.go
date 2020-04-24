@@ -77,7 +77,11 @@ func (server *Server) ProcessStatusRequest(client *client, _ javaio.StatusReques
 		VersionText: "1.20",
 		VersionProtocol: 578,
 		MaxPlayers: 20,
-		OnlinePlayers: 0,
+		OnlinePlayers: 2,
+		// PlayerSample: []javaio.StatusResponsePlayer {
+		// 	{ Name: "Hello", Uuid: "65bd239f-89f2-4cc7-ae8b-bb625525904e" },
+		// 	{ Name: "Universe", Uuid: "65bd239f-89f2-4cc7-ae8b-bb625525904e" },
+		// },
 	}, client.state, client.output)
 }
 

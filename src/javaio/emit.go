@@ -106,7 +106,7 @@ type statusJson struct {
 
 type statusJsonPlayer struct {
 	Name string `json:"name"`
-	Uuid string `json:"name"`
+	Uuid string `json:"id"`
 }
 
 func EmitStatusResponse(status StatusResponse, result *bufio.Writer) (err error) {
@@ -144,6 +144,7 @@ func EmitStatusResponse(status StatusResponse, result *bufio.Writer) (err error)
 		return
 	}
 
+	println(string(jsonBytes))
 	return
 }
 
