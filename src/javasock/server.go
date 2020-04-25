@@ -73,7 +73,7 @@ func (server *Server) handleReceive(client *client) {
 
 		// Default
 	default:
-		panic("Unrecognized packet type")
+		// panic("Unrecognized packet type")
 	}
 }
 
@@ -108,5 +108,15 @@ func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) 
 	javaio.EmitClientboundPacketUncompressed(&javaio.LoginSuccess {
 		Uuid: uuid.New(),
 		Username: data.ClientsideUsername,
+	}, client.state, client.output)
+	client.state = javaio.StatePlay
+	javaio.EmitClientboundPacketUncompressed(&javaio.JoinGame {
+		Eid: 0,
+		Gamemode: javaio.GamemodeSurvival,
+		Hardcore: false,
+		Dimension: javaio.DimensionOverworld,
+		ViewDistance: 1,
+		ReducedDebugInfo: false,
+		EnableRespawnScreen: false,
 	}, client.state, client.output)
 }

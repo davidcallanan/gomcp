@@ -40,7 +40,14 @@ func EmitClientboundPacketUncompressed(packet interface{}, state int, output *bu
 			panic(err)
 		}
 	case StatePlay:
-		panic("Not implemented")
+		switch packet := packet.(type) {
+		case *JoinGame:
+			packetId = 0x26
+			err = EmitJoinGame(*packet, dataWriter)	
+		default:
+			err = &WrongStateError { "Packet can not be emitted in the current state" }
+			panic(err)
+		}
 	default:
 		panic("State does not match one of non-invalid predefined enum types")
 	}

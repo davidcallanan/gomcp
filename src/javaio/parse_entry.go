@@ -46,7 +46,7 @@ func ParseServerboundPacketUncompressed(data *bufio.Reader, state int) (result i
 			err = &UnsupportedPayloadError { fmt.Sprintf("Unrecognized packet id %d", packetId) }
 		}
 	case StatePlay:
-		panic("Not implemented")
+		// panic("Not implemented")
 	default:
 		panic("State does not match one of non-invalid predefined enum values")
 	}
