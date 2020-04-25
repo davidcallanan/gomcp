@@ -1,6 +1,7 @@
 package javasock
 
 import "io"
+import "time"
 import "bufio"
 import "github.com/davidcallanan/gomcp/javaio"
 import "github.com/google/uuid"
@@ -37,6 +38,23 @@ func (server *Server) AddConnection(input io.Reader, output io.Writer, closeCall
 	go func() {
 		for !client.isClosed {
 			server.handleReceive(client)
+		}
+	}()
+
+	go func() {
+		timer := time.NewTicker(time.Second * 20)
+
+		for now := range timer.C {
+			if client.isClosed {
+				break
+			}
+			if client.state != javaio.StatePlay {
+				continue
+			}
+
+			javaio.EmitClientboundPacketUncompressed(&javaio.KeepAlive {
+				Payload: now.Unix(),
+			}, client.state, client.output)
 		}
 	}()
 }
@@ -105,25 +123,29 @@ func (server *Server) ProcessPing(client *client, ping javaio.Ping) {
 
 func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) {
 	println(data.ClientsideUsername)
+
 	javaio.EmitClientboundPacketUncompressed(&javaio.LoginSuccess {
 		Uuid: uuid.New(),
 		Username: data.ClientsideUsername,
 	}, client.state, client.output)
+
 	client.state = javaio.StatePlay
+
 	javaio.EmitClientboundPacketUncompressed(&javaio.JoinGame {
 		Eid: 0,
-		Gamemode: javaio.GamemodeSurvival,
+		Gamemode: javaio.GamemodeCreative,
 		Hardcore: false,
 		Dimension: javaio.DimensionOverworld,
 		ViewDistance: 1,
 		ReducedDebugInfo: false,
 		EnableRespawnScreen: false,
 	}, client.state, client.output)
-	javaio.EmitClientboundPacketUncompressed(&javaio.SpawnPosition {
-		Location: javaio.BlockPosition {
-			X: 0,
-			Y: 64,
-			Z: 0,
-		},
+
+	javaio.EmitClientboundPacketUncompressed(&javaio.CompassPosition {
+		Location: javaio.BlockPosition { X: 0, Y: 64, Z: 0 },
+	}, client.state, client.output)
+
+	javaio.EmitClientboundPacketUncompressed(&javaio.PlayerPositionAndLook {
+		X: 0, Y: 64, Z: 0, Yaw: 0, Pitch: 0,
 	}, client.state, client.output)
 }

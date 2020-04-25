@@ -1,6 +1,7 @@
 package javaio
 
 import "bufio"
+import "math"
 
 /**  Not all types are implemented at this time.  **/
 
@@ -54,6 +55,30 @@ func EmitVarInt(value int32, result *bufio.Writer) {
 			break
 		}
 	}
+}
+
+func EmitFloat(value float32, result *bufio.Writer) {
+	n := math.Float32bits(value)
+	result.Write([]byte {
+		byte(n >> 24),
+		byte(n >> 16),
+		byte(n >> 8),
+		byte(n),
+	})
+}
+
+func EmitDouble(value float64, result *bufio.Writer) {
+	n := math.Float64bits(value)
+	result.Write([]byte {
+		byte(n >> 56),
+		byte(n >> 48),
+		byte(n >> 40),
+		byte(n >> 32),
+		byte(n >> 24),
+		byte(n >> 16),
+		byte(n >> 8),
+		byte(n),
+	})
 }
 
 func EmitString(value string, result *bufio.Writer) {

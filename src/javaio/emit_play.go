@@ -6,6 +6,10 @@ import "bufio"
 
 // Clientbound
 
+func EmitKeepAlive(data KeepAlive, result *bufio.Writer) {
+	EmitLong(data.Payload, result)
+}
+
 func EmitJoinGame(data JoinGame, result *bufio.Writer) {
 	EmitInt(data.Eid, result)
 
@@ -62,6 +66,39 @@ func EmitJoinGame(data JoinGame, result *bufio.Writer) {
 	EmitBoolean(data.EnableRespawnScreen, result)
 }
 
-func EmitSpawnPosition(spawnPosition SpawnPosition, result *bufio.Writer) {
-	EmitBlockPosition(spawnPosition.Location, result)
+func EmitPlayerPositionAndLook(data PlayerPositionAndLook, result *bufio.Writer) {
+	EmitDouble(data.X, result)
+	EmitDouble(data.Y, result)
+	EmitDouble(data.Z, result)
+	EmitFloat(data.Yaw, result)
+	EmitFloat(data.Pitch, result)
+
+	var flags byte
+
+	if data.IsRelX {
+		flags |= 0x01
+	}
+	if data.IsRelY {
+		flags |= 0x02
+	}
+	if data.IsRelZ {
+		flags |= 0x04
+	}
+	if data.IsRelYaw {
+		flags |= 0x10
+	}
+	if data.IsRelPitch {
+		flags |= 0x08
+	}
+
+	EmitUnsignedByte(flags, result)
+
+	// Seems pointless for now.
+	// Probably useful for interpolation, etc.
+	var teleportId int32 = 0
+	EmitVarInt(teleportId, result)
+}
+
+func EmitCompassPosition(compassPosition CompassPosition, result *bufio.Writer) {
+	EmitBlockPosition(compassPosition.Location, result)
 }

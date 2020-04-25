@@ -38,12 +38,18 @@ func EmitClientboundPacketUncompressed(packet interface{}, state int, output *bu
 		}
 	case StatePlay:
 		switch packet := packet.(type) {
+		case *KeepAlive:
+			packetId = 0x21
+			EmitKeepAlive(*packet, dataWriter)
 		case *JoinGame:
 			packetId = 0x26
 			EmitJoinGame(*packet, dataWriter)	
-		case *SpawnPosition:
+		case *CompassPosition:
 			packetId = 0x4E
-			EmitSpawnPosition(*packet, dataWriter)
+			EmitCompassPosition(*packet, dataWriter)
+		case *PlayerPositionAndLook:
+			packetId = 0x36
+			EmitPlayerPositionAndLook(*packet, dataWriter)
 		default:
 			panic("Packet cannot be emitted in play state (likely because not implemented)")
 		}
