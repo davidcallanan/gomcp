@@ -6,11 +6,8 @@ import "bufio"
 
 // Clientbound
 
-func EmitJoinGame(data JoinGame, result *bufio.Writer) (err error) {
-	err = EmitInt(data.Eid, result)
-	if err != nil {
-		return
-	}
+func EmitJoinGame(data JoinGame, result *bufio.Writer) {
+	EmitInt(data.Eid, result)
 
 	var gamemode byte
 	switch data.Gamemode {
@@ -23,7 +20,7 @@ func EmitJoinGame(data JoinGame, result *bufio.Writer) (err error) {
 	case GamemodeSpectator:
 		gamemode = 3
 	default:
-		panic("Why did you just give me an invalid gamemode?")
+		panic("Gamemode does not match one of non-invalid predefined enum types")
 	}
 
 	if data.Hardcore {
@@ -45,32 +42,22 @@ func EmitJoinGame(data JoinGame, result *bufio.Writer) (err error) {
 		panic("What sort of a dimension is that?")
 	}
 
-	err = EmitInt(dimension, result)
-	if err != nil {
-		return
-	}
+	EmitInt(dimension, result)
 
 	var hashedSeed int64 = 0 // seems kind of useless
-	err = EmitLong(hashedSeed, result)
-	if err != nil {
-		return
-	}
-
+	EmitLong(hashedSeed, result)
+	
 	var maxPlayers byte = 0 // no longer utilized by client
 	EmitUnsignedByte(maxPlayers, result)
 
 	var levelType string = "default" // seems kind of useless
-	err = EmitString(levelType, result)
-	if err != nil {
-		return
-	}
+	EmitString(levelType, result)
 
 	if data.ViewDistance > 32 {
-		panic("Render distance must not be greater than 32!")
+		panic("Render distance must not be greater than 32")
 	}
 
 	EmitVarInt(data.ViewDistance, result)
 	EmitBoolean(data.ReducedDebugInfo, result)
 	EmitBoolean(data.EnableRespawnScreen, result)
-	return
 }

@@ -6,21 +6,11 @@ import "bufio"
 
 // Clientbound
 
-func EmitLoginSuccess(loginSuccess LoginSuccess, result *bufio.Writer) (err error) {
+func EmitLoginSuccess(loginSuccess LoginSuccess, result *bufio.Writer) {
 	if len(loginSuccess.Username) > 16 {
-		err := &PacketTooLargeError { "Username of LoginSuccess is too long (must not be over 16 runes)" }
-		panic(err)
+		panic("Username of LoginSuccess is too long (must not be over 16 runes)")
 	}
 
-	err = EmitString(loginSuccess.Uuid.String(), result)
-	if err != nil {
-		return
-	}
-
-	err = EmitString(loginSuccess.Username, result)
-	if err != nil {
-		return
-	}
-
-	return
+	EmitString(loginSuccess.Uuid.String(), result)
+	EmitString(loginSuccess.Username, result)
 }

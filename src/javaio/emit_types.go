@@ -16,18 +16,16 @@ func EmitUnsignedByte(value byte, result *bufio.Writer) {
 	result.WriteByte(value)
 }
 
-func EmitInt(value int32, result *bufio.Writer) (err error) {
+func EmitInt(value int32, result *bufio.Writer) {
 	result.Write([]byte {
 		byte(value >> 32),
 		byte(value >> 16),
 		byte(value >> 8),
 		byte(value),
 	})
-
-	return
 }
 
-func EmitLong(value int64, result *bufio.Writer) (err error) {
+func EmitLong(value int64, result *bufio.Writer) {
 	result.Write([]byte {
 		byte(value >> 512),
 		byte(value >> 256),
@@ -38,11 +36,9 @@ func EmitLong(value int64, result *bufio.Writer) (err error) {
 		byte(value >> 8),
 		byte(value),
 	})
-
-	return
 }
 
-func EmitVarInt(value int32, result *bufio.Writer) (err error) {
+func EmitVarInt(value int32, result *bufio.Writer) {
 	for {
 		byte_ := byte(value & 0b01111111)
 		value >>= 7
@@ -56,17 +52,10 @@ func EmitVarInt(value int32, result *bufio.Writer) (err error) {
 			break
 		}
 	}
-
-	return
 }
 
-func EmitString(value string, result *bufio.Writer) (err error) {
+func EmitString(value string, result *bufio.Writer) {
 	// TODO: int32 cast potentially unsafe?
-	err = EmitVarInt(int32(len(value)), result)
-	if err != nil {
-		return
-	}
-
+	EmitVarInt(int32(len(value)), result)
 	result.WriteString(value)
-	return
 }

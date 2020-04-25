@@ -30,7 +30,7 @@ type statusJsonPlayer struct {
 	Uuid string `json:"id"`
 }
 
-func EmitStatusResponse(status StatusResponse, result *bufio.Writer) (err error) {
+func EmitStatusResponse(status StatusResponse, result *bufio.Writer) {
 	// Generate JSON
 	jsonObj := statusJson {}
 	jsonObj.Description.Text = status.Description
@@ -51,15 +51,13 @@ func EmitStatusResponse(status StatusResponse, result *bufio.Writer) (err error)
 	jsonBytes, err := json.Marshal(jsonObj)
 
 	if err != nil {
-		panic("There shouldn't be an error here...")
+		panic(err)
 	}
 
 	// Emit packet
-	err = EmitString(string(jsonBytes), result)
-	return
+	EmitString(string(jsonBytes), result)
 }
 
-func EmitPong(pong Pong, result *bufio.Writer) (err error) {
-	err = EmitLong(pong.Payload, result)
-	return
+func EmitPong(pong Pong, result *bufio.Writer) {
+	EmitLong(pong.Payload, result)
 }

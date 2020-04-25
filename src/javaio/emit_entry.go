@@ -7,7 +7,7 @@ import "bufio"
 
 // Clientbound
 
-func EmitClientboundPacketUncompressed(packet interface{}, state int, output *bufio.Writer) (err error) {
+func EmitClientboundPacketUncompressed(packet interface{}, state int, output *bufio.Writer) {
 	var packetId int32 = -1
 	var packetIdBuf bytes.Buffer
 	var dataBuf bytes.Buffer
@@ -16,77 +16,58 @@ func EmitClientboundPacketUncompressed(packet interface{}, state int, output *bu
 
 	switch state {
 	case StateHandshaking:
-		err = &WrongStateError { "Packet can not be emitted in the current state" }
-		panic(err)
+		panic("Packet cannot be emitted in handshaking state")
 	case StateStatus:
 		switch packet := packet.(type) {
 		case *StatusResponse:
-			packetId = 0
-			err = EmitStatusResponse(*packet, dataWriter)
+			packetId = 0x00
+			EmitStatusResponse(*packet, dataWriter)
 		case *Pong:
-			packetId = 1
-			err = EmitPong(*packet, dataWriter)
+			packetId = 0x01
+			EmitPong(*packet, dataWriter)
 		default:
-			err = &WrongStateError { "Packet can not be emitted in the current state" }
-			panic(err)
+			panic("Packet cannot be emitted in status state")
 		}
 	case StateLogin:
 		switch packet := packet.(type) {
 		case *LoginSuccess:
-			packetId = 2
-			err = EmitLoginSuccess(*packet, dataWriter)	
+			packetId = 0x02
+			EmitLoginSuccess(*packet, dataWriter)	
 		default:
-			err = &WrongStateError { "Packet can not be emitted in the current state" }
-			panic(err)
+			panic("Packet cannot be emitted in login state")
 		}
 	case StatePlay:
 		switch packet := packet.(type) {
 		case *JoinGame:
 			packetId = 0x26
-			err = EmitJoinGame(*packet, dataWriter)	
+			EmitJoinGame(*packet, dataWriter)	
 		default:
-			err = &WrongStateError { "Packet can not be emitted in the current state" }
-			panic(err)
+			panic("Packet cannot be emitted in play state (likely because not implemented)")
 		}
 	default:
 		panic("State does not match one of non-invalid predefined enum types")
 	}
 	
 	if packetId == -1 {
-		panic("Implementation bug: packet id was not set while preparing to emit a packet")
+		panic("Internal package bug: packet id was not set while preparing to emit a packet")
 	}
 
-	if err != nil {
-		return
-	}
-
-	err = EmitVarInt(packetId, packetIdWriter)
-	
-	if err != nil {
-		return
-	}
-
+	EmitVarInt(packetId, packetIdWriter)
 	dataWriter.Flush()
 	packetIdWriter.Flush()
 	length := packetIdBuf.Len() + dataBuf.Len()
 	lengthInt32 := int32(length)
 
 	if length > int(lengthInt32) {
-		err = &PacketTooLargeError { "Emitted data was too large to hold its size in a VarInt" }
+		panic("Emitted packet data was too large to hold its size in VarInt")
 	}
 
-	err = EmitVarInt(lengthInt32, output)
-
-	if err != nil {
-		return
-	}
-
+	EmitVarInt(lengthInt32, output)
 	output.Write(packetIdBuf.Bytes())
 	output.Write(dataBuf.Bytes())
 	output.Flush()
-	return
 }
 
-func EmitClientboundPacketCompressed(packet interface{}, state int, output *bufio.Writer) (err error) {
+func EmitClientboundPacketCompressed(packet interface{}, state int, output *bufio.Writer) {
 	panic("EmicClientboundPacketCompressed not implemented")
 }
