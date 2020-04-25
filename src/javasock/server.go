@@ -148,4 +148,11 @@ func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) 
 	javaio.EmitClientboundPacketUncompressed(&javaio.PlayerPositionAndLook {
 		X: 0, Y: 64, Z: 0, Yaw: 0, Pitch: 0,
 	}, client.state, client.output)
+
+	javaio.EmitClientboundPacketUncompressed(&javaio.ChunkData {
+		X: 0, Y: 0, IsNew: true, SegmentMask: 0x10000000,
+		Data: []byte {
+			
+		}
+	})
 }

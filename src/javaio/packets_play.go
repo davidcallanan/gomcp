@@ -16,6 +16,10 @@ type JoinGame struct {
 	EnableRespawnScreen bool
 }
 
+type CompassPosition struct {
+	Location BlockPosition
+}
+
 type PlayerPositionAndLook struct {
 	X float64
 	Y float64
@@ -29,8 +33,12 @@ type PlayerPositionAndLook struct {
 	IsRelPitch bool
 }
 
-type CompassPosition struct {
-	Location BlockPosition
+type ChunkData struct {
+	X int32
+	Z int32
+	IsNew bool
+	SegmentMask byte
+	Data [][]uint32
 }
 
 // Serverbound

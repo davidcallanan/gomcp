@@ -66,6 +66,10 @@ func EmitJoinGame(data JoinGame, result *bufio.Writer) {
 	EmitBoolean(data.EnableRespawnScreen, result)
 }
 
+func EmitCompassPosition(compassPosition CompassPosition, result *bufio.Writer) {
+	EmitBlockPosition(compassPosition.Location, result)
+}
+
 func EmitPlayerPositionAndLook(data PlayerPositionAndLook, result *bufio.Writer) {
 	EmitDouble(data.X, result)
 	EmitDouble(data.Y, result)
@@ -99,6 +103,46 @@ func EmitPlayerPositionAndLook(data PlayerPositionAndLook, result *bufio.Writer)
 	EmitVarInt(teleportId, result)
 }
 
-func EmitCompassPosition(compassPosition CompassPosition, result *bufio.Writer) {
-	EmitBlockPosition(compassPosition.Location, result)
+func EmitChunkData(chunk Chunk, result *bufio.Writer) {
+	EmitInt(chunk.X, result)
+	EmitInt(chunk.Z, result)
+	EmitBoolean(chunk.IsNew, result)
+	EmitVarInt(chunk.SegmentMask)
+	EmitUnsignedByte(0x00, result) // no NBT (haven't a clue if this will work)
+
+	if chunk.IsNew {
+		// Set biome to void for the time being
+		for (i := 0; i < 1024; i++) {
+			EmitInt(127, result)
+		}
+	}
+
+	var dataBuf bytes.Buffer
+	dataWriter := bufio.NewWriter(&dataBuf)
+	
+	for segment := range chunk.Data {
+		EmitChunkSegmentData(segment, dataWriter)
+	}
+
+	EmitVarInt(dataBuf.Len(), result)
+	result.Write(dataBuf.bytes())
+
+	EmitChunkSegmentData()
+
+	EmitVarInt(0, result) // no block entities
+}
+
+func EmitChunkSegmentData(blocks []byte, result *bufio.Writer) {
+	EmitShort(0, result) // block count
+	EmitUnsignedByte(14, result) // bits per block
+	// No palette because bits per block is full (can be optimized in future)
+
+	length := (len(blocks) + len(blocks) % 64) / 64
+
+	EmitVarInt(length, result)
+
+	for i, block := range blocks {
+		id := uint16(block) & 0x0011111111111111
+		// TODO
+	}
 }
