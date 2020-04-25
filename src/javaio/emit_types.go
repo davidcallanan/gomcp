@@ -38,6 +38,12 @@ func EmitVarInt(value int32, result *bufio.Writer) (err error) {
 }
 
 func EmitString(value string, result *bufio.Writer) (err error) {
+	// TODO: int32 cast potentially unsafe?
+	err = EmitVarInt(int32(len(value)), result)
+	if err != nil {
+		return
+	}
+
 	result.WriteString(value)
 	return
 }

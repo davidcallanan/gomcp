@@ -31,7 +31,14 @@ func EmitClientboundPacketUncompressed(packet interface{}, state int, output *bu
 			panic(err)
 		}
 	case StateLogin:
-		panic("Not implemented")
+		switch packet := packet.(type) {
+		case *LoginSuccess:
+			packetId = 2
+			err = EmitLoginSuccess(*packet, dataWriter)	
+		default:
+			err = &WrongStateError { "Packet can not be emitted in the current state" }
+			panic(err)
+		}
 	case StatePlay:
 		panic("Not implemented")
 	default:

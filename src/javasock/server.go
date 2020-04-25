@@ -3,6 +3,7 @@ package javasock
 import "io"
 import "bufio"
 import "github.com/davidcallanan/gomcp/javaio"
+import "github.com/google/uuid"
 
 type client struct {
 	state int
@@ -104,4 +105,8 @@ func (server *Server) ProcessPing(client *client, ping javaio.Ping) {
 
 func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) {
 	println(data.ClientsideUsername)
+	javaio.EmitClientboundPacketUncompressed(&javaio.LoginSuccess {
+		Uuid: uuid.New(),
+		Username: data.ClientsideUsername,
+	}, client.state, client.output)
 }

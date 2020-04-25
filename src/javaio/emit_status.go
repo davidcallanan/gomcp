@@ -55,16 +55,7 @@ func EmitStatusResponse(status StatusResponse, result *bufio.Writer) (err error)
 	}
 
 	// Emit packet
-	err = EmitVarInt(int32(len(jsonBytes)), result)
-	if err != nil {
-		return
-	}
-
 	err = EmitString(string(jsonBytes), result)
-	if err != nil {
-		return
-	}
-
 	return
 }
 
