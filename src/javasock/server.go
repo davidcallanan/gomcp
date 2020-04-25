@@ -119,4 +119,11 @@ func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) 
 		ReducedDebugInfo: false,
 		EnableRespawnScreen: false,
 	}, client.state, client.output)
+	javaio.EmitClientboundPacketUncompressed(&javaio.SpawnPosition {
+		Location: javaio.BlockPosition {
+			X: 0,
+			Y: 64,
+			Z: 0,
+		},
+	}, client.state, client.output)
 }

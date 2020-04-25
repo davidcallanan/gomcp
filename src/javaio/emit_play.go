@@ -61,3 +61,7 @@ func EmitJoinGame(data JoinGame, result *bufio.Writer) {
 	EmitBoolean(data.ReducedDebugInfo, result)
 	EmitBoolean(data.EnableRespawnScreen, result)
 }
+
+func EmitSpawnPosition(spawnPosition SpawnPosition, result *bufio.Writer) {
+	EmitBlockPosition(spawnPosition.Location, result)
+}

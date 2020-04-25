@@ -12,4 +12,8 @@ type JoinGame struct {
 	EnableRespawnScreen bool
 }
 
+type SpawnPosition struct {
+	Location BlockPosition
+}
+
 // Serverbound
