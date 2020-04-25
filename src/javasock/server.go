@@ -56,12 +56,21 @@ func (server *Server) handleReceive(client *client) {
 	}
 
 	switch packet := packet.(type) {
+		// Handshaking
 	case javaio.Handshake:
 		server.ProcessHandshake(client, packet)
+
+		// Status
 	case javaio.StatusRequest:
 		server.ProcessStatusRequest(client, packet)
 	case javaio.Ping:
 		server.ProcessPing(client, packet)
+
+		// Login
+	case javaio.LoginStart:
+		server.ProcessLoginStart(client, packet)
+
+		// Default
 	default:
 		panic("Unrecognized packet type")
 	}
@@ -91,4 +100,8 @@ func (server *Server) ProcessPing(client *client, ping javaio.Ping) {
 	javaio.EmitClientboundPacketUncompressed(&javaio.Pong {
 		Payload: ping.Payload,
 	}, client.state, client.output)
+}
+
+func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) {
+	println(data.ClientsideUsername)
 }

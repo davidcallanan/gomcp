@@ -39,7 +39,12 @@ func ParseServerboundPacketUncompressed(data *bufio.Reader, state int) (result i
 			err = &UnsupportedPayloadError { fmt.Sprintf("Unrecognized packet id %d", packetId) }
 		}
 	case StateLogin:
-		panic("Not implemented")
+		switch packetId {
+		case 0:
+			result, err = ParseLoginStart(data)
+		default:
+			err = &UnsupportedPayloadError { fmt.Sprintf("Unrecognized packet id %d", packetId) }
+		}
 	case StatePlay:
 		panic("Not implemented")
 	default:

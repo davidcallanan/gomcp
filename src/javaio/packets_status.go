@@ -1,17 +1,8 @@
 package javaio
 
-// Handshake packets
+/**  All types for this state are available.  **/
 
-type Handshake struct {
-	ProtocolVersion int32
-	ServerAddress string
-	ServerPort uint16
-	NextState int
-}
-
-// Status packets
-
-type StatusRequest struct {}
+// Clientbound
 
 type StatusResponse struct {
 	Description string
@@ -28,14 +19,14 @@ type StatusResponsePlayer struct {
 	Uuid string
 }
 
-type Ping struct {
-	Payload int64
-}
-
 type Pong struct {
 	Payload int64
 }
 
-// Login packets
+// Serverbound
 
-// Play packets
+type StatusRequest struct {}
+
+type Ping struct {
+	Payload int64
+}
