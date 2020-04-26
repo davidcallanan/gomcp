@@ -151,7 +151,7 @@ func EmitChunkData(chunk ChunkData, result *bufio.Writer) {
 func EmitChunkSegmentData(blocks []uint32, result *bufio.Writer) {
 	const bitsPerBlock = 14
 
-	EmitShort(4096, result) // block count
+	EmitShort(1, result) // block count
 	EmitUnsignedByte(bitsPerBlock, result)
 	// No palette because bits per block is full (can be optimized in future)
 
@@ -173,10 +173,10 @@ func EmitChunkSegmentData(blocks []uint32, result *bufio.Writer) {
 			// extract bit
 			bit := (block >> i) & 1
 			// save bit into long
-			currLong |= (uint64(bit) << (64 - currLongBit))
+			currLong |= (uint64(bit) << currLongBit)
 			currLongBit++
 			// when long is filled, emit and reset
-			if currLongBit > 63 {
+			if currLongBit == 64 {
 				EmitLong(int64(currLong), result) // potentially unsafe cast
 				currLong = 0
 				currLongBit = 0
