@@ -155,8 +155,8 @@ func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) 
 		blocks[i] = 1
 	}
 
-	for x := -3; x <= 3; x++ {
-		for z := -3; z <= 3; z++ {
+	for x := -1; x <= 1; x++ {
+		for z := -1; z <= 1; z++ {
 			javaio.EmitClientboundPacketUncompressed(&javaio.ChunkData {
 				X: int32(x), Z: int32(z), IsNew: true, SegmentMask: 0b00001000,
 				Segments: [][]uint32 { blocks[:] },
