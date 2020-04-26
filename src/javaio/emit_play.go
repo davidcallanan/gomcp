@@ -136,11 +136,11 @@ func EmitChunkSegmentData(blocks []uint32, result *bufio.Writer) {
 	EmitUnsignedByte(14, result) // bits per block
 	// No palette because bits per block is full (can be optimized in future)
 
-	length := (len(blocks) + len(blocks) % 64) / 64
-
-	if length != 4096 {
+	if len(blocks) != 4096 {
 		panic("There must be exactly 4096 blocks in each chunk segment")
 	}
+
+	length := (len(blocks) + len(blocks) % 64) / 64
 
 	EmitVarInt(int32(length), result)
 
