@@ -149,7 +149,7 @@ func EmitChunkData(chunk ChunkData, result *bufio.Writer) {
 }
 
 func EmitChunkSegmentData(blocks []uint32, result *bufio.Writer) {
-	EmitShort(0, result) // block count
+	EmitShort(4096, result) // block count
 	EmitUnsignedByte(14, result) // bits per block
 	// No palette because bits per block is full (can be optimized in future)
 

@@ -152,10 +152,8 @@ func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) 
 	var blocks [4096]uint32 // initialized to 0 (I hope that corresponds to stone)
 
 	for i := range blocks {
-		blocks[i] = 1
+		blocks[i] = 718
 	}
-
-	time.Sleep(time.Second * 1)
 
 	for x := -3; x <= 3; x++ {
 		for z := -3; z <= 3; z++ {
