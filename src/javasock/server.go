@@ -152,13 +152,13 @@ func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) 
 	var blocks [4096]uint32 // initialized to 0 (I hope that corresponds to stone)
 
 	for i := range blocks {
-		blocks[i] = 718
+		blocks[i] = 1
 	}
 
 	for x := -3; x <= 3; x++ {
 		for z := -3; z <= 3; z++ {
 			javaio.EmitClientboundPacketUncompressed(&javaio.ChunkData {
-				X: int32(x), Z: int32(z), IsNew: true, SegmentMask: 0b00000001,
+				X: int32(x), Z: int32(z), IsNew: true, SegmentMask: 0b00001000,
 				Segments: [][]uint32 { blocks[:] },
 			}, client.state, client.output)
 		}
