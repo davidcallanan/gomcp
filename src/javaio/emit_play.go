@@ -108,8 +108,19 @@ func EmitChunkData(chunk ChunkData, result *bufio.Writer) {
 	EmitInt(chunk.X, result)
 	EmitInt(chunk.Z, result)
 	EmitBoolean(chunk.IsNew, result)
-	EmitVarInt(int32(chunk.SegmentMask), result)
-	EmitUnsignedByte(0x00, result) // no NBT (haven't a clue if this will work)
+	EmitVarInt(int32(chunk.SegmentMask), result) // TODO: enforce correct section mask
+	
+	// Hacked in NBT for heightmaps
+	// EmitVarInt(2+15+1+288, result) // Maybe we have to send the length as well?
+	result.Write([]byte {
+		12, // Start long array
+		15, // Length of array name
+	})
+	result.Write([]byte("MOTION_BLOCKING")) // Array name
+	EmitInt(288, result) // Length of array
+	for i := 0; i < 288; i++ {
+		result.WriteByte(0xFE) // arbitrary value for the heightmap
+	}
 
 	if chunk.IsNew {
 		// Set biome to void for the time being
