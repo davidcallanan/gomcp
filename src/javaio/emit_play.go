@@ -1,6 +1,7 @@
 package javaio
 
 import "bufio"
+import "bytes"
 
 /**  Serverbound packet emission is not implemented.  **/
 
@@ -103,16 +104,16 @@ func EmitPlayerPositionAndLook(data PlayerPositionAndLook, result *bufio.Writer)
 	EmitVarInt(teleportId, result)
 }
 
-func EmitChunkData(chunk Chunk, result *bufio.Writer) {
+func EmitChunkData(chunk ChunkData, result *bufio.Writer) {
 	EmitInt(chunk.X, result)
 	EmitInt(chunk.Z, result)
 	EmitBoolean(chunk.IsNew, result)
-	EmitVarInt(chunk.SegmentMask)
+	EmitVarInt(int32(chunk.SegmentMask), result)
 	EmitUnsignedByte(0x00, result) // no NBT (haven't a clue if this will work)
 
 	if chunk.IsNew {
 		// Set biome to void for the time being
-		for (i := 0; i < 1024; i++) {
+		for i := 0; i < 1024; i++ {
 			EmitInt(127, result)
 		}
 	}
@@ -120,29 +121,51 @@ func EmitChunkData(chunk Chunk, result *bufio.Writer) {
 	var dataBuf bytes.Buffer
 	dataWriter := bufio.NewWriter(&dataBuf)
 	
-	for segment := range chunk.Data {
+	for _, segment := range chunk.Segments {
 		EmitChunkSegmentData(segment, dataWriter)
 	}
 
-	EmitVarInt(dataBuf.Len(), result)
-	result.Write(dataBuf.bytes())
-
-	EmitChunkSegmentData()
+	EmitVarInt(int32(dataBuf.Len()), result) // potentially unsafe cast
+	result.Write(dataBuf.Bytes())
 
 	EmitVarInt(0, result) // no block entities
 }
 
-func EmitChunkSegmentData(blocks []byte, result *bufio.Writer) {
+func EmitChunkSegmentData(blocks []uint32, result *bufio.Writer) {
 	EmitShort(0, result) // block count
 	EmitUnsignedByte(14, result) // bits per block
 	// No palette because bits per block is full (can be optimized in future)
 
 	length := (len(blocks) + len(blocks) % 64) / 64
 
-	EmitVarInt(length, result)
+	if length != 4096 {
+		panic("There must be exactly 4096 blocks in each chunk segment")
+	}
 
-	for i, block := range blocks {
-		id := uint16(block) & 0x0011111111111111
-		// TODO
+	EmitVarInt(int32(length), result)
+
+	currLong := uint64(0)
+	currLongBit := 0
+
+	for _, block := range blocks {
+		// take the 14 bits from the block
+		for i := 0; i < 14; i ++ {
+			// extract bit
+			bit := (block >> i) & 1
+			// save bit into long
+			currLong |= (uint64(bit) << currLongBit)
+			currLongBit++
+			// when long is filled, emit and reset
+			if currLongBit > 63 {
+				EmitLong(int64(currLong), result) // potentially unsafe cast
+				currLong = 0
+				currLongBit = 0
+			}
+		}
+	}
+
+	// flush any leftover that still needs to be emitted
+	if currLongBit > 0 {
+		EmitLong(int64(currLong), result) // potentially unsafe cast
 	}
 }

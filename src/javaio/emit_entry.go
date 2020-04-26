@@ -50,6 +50,9 @@ func EmitClientboundPacketUncompressed(packet interface{}, state int, output *bu
 		case *PlayerPositionAndLook:
 			packetId = 0x36
 			EmitPlayerPositionAndLook(*packet, dataWriter)
+		case *ChunkData:
+			packetId = 0x22
+			EmitChunkData(*packet, dataWriter)
 		default:
 			panic("Packet cannot be emitted in play state (likely because not implemented)")
 		}

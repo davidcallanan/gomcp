@@ -149,10 +149,10 @@ func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) 
 		X: 0, Y: 64, Z: 0, Yaw: 0, Pitch: 0,
 	}, client.state, client.output)
 
+	var blocks [4096]uint32 // initialized to 0 (I hope that corresponds to stone)
+
 	javaio.EmitClientboundPacketUncompressed(&javaio.ChunkData {
-		X: 0, Y: 0, IsNew: true, SegmentMask: 0x10000000,
-		Data: []byte {
-			
-		}
-	})
+		X: 0, Z: 0, IsNew: true, SegmentMask: 0b10000000,
+		Segments: [][]uint32 { blocks[:] },
+	}, client.state, client.output)
 }

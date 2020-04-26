@@ -19,6 +19,13 @@ func EmitUnsignedByte(value byte, result *bufio.Writer) {
 	result.WriteByte(value)
 }
 
+func EmitShort(value int16, result *bufio.Writer) {
+	result.Write([]byte {
+		byte(value >> 8),
+		byte(value),
+	})
+}
+
 func EmitInt(value int32, result *bufio.Writer) {
 	result.Write([]byte {
 		byte(value >> 32),

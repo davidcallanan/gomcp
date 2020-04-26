@@ -38,7 +38,7 @@ type ChunkData struct {
 	Z int32
 	IsNew bool
 	SegmentMask byte
-	Data [][]uint32
+	Segments [][]uint32
 }
 
 // Serverbound
