@@ -114,9 +114,11 @@ func EmitChunkData(chunk ChunkData, result *bufio.Writer) {
 	// Maybe we have to send the length as well?
 	result.Write([]byte {
 		10, // Compound start
+		0,  // Length of compound name (1/2)
+		0,  // Length of compound name (2/2)
 		12, // Start long array
-		15,  // Length of array name (1/2)
-		0, // Length of array name (2/2)
+		15, // Length of array name (1/2)
+		0,  // Length of array name (2/2)
 	})
 	result.Write([]byte("MOTION_BLOCKING")) // Array name
 	EmitInt(36, result) // Length of array
