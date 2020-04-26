@@ -115,11 +115,11 @@ func EmitChunkData(chunk ChunkData, result *bufio.Writer) {
 	result.Write([]byte {
 		10, // Compound start
 		12, // Start long array
-		0,  // Length of array name (1/2)
-		15, // Length of array name (2/2)
+		15,  // Length of array name (1/2)
+		0, // Length of array name (2/2)
 	})
 	result.Write([]byte("MOTION_BLOCKING")) // Array name
-	EmitInt(288, result) // Length of array
+	EmitInt(36, result) // Length of array
 	for i := 0; i < 288; i++ {
 		result.WriteByte(0xFE) // arbitrary value for the heightmap
 	}
