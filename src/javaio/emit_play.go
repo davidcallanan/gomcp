@@ -125,6 +125,7 @@ func EmitChunkData(chunk ChunkData, result *bufio.Writer) {
 		EmitChunkSegmentData(segment, dataWriter)
 	}
 
+	dataWriter.Flush()
 	EmitVarInt(int32(dataBuf.Len()), result) // potentially unsafe cast
 	result.Write(dataBuf.Bytes())
 
@@ -140,7 +141,8 @@ func EmitChunkSegmentData(blocks []uint32, result *bufio.Writer) {
 		panic("There must be exactly 4096 blocks in each chunk segment")
 	}
 
-	length := (len(blocks) + len(blocks) % 64) / 64
+	bitLength := len(blocks) * 14
+	length := (bitLength + bitLength % 64) / 64
 
 	EmitVarInt(int32(length), result)
 
@@ -149,7 +151,7 @@ func EmitChunkSegmentData(blocks []uint32, result *bufio.Writer) {
 
 	for _, block := range blocks {
 		// take the 14 bits from the block
-		for i := 0; i < 14; i ++ {
+		for i := 0; i < 14; i++ {
 			// extract bit
 			bit := (block >> i) & 1
 			// save bit into long
