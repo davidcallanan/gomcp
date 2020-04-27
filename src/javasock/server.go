@@ -3,6 +3,7 @@ package javasock
 import "io"
 import "time"
 import "bufio"
+import "math/rand"
 import "github.com/davidcallanan/gomcp/javaio"
 import "github.com/google/uuid"
 
@@ -152,6 +153,7 @@ func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) 
 	var blocks [4096]uint32 // initialized to 0 (I hope that corresponds to stone)
 
 	for i := range blocks {
+		blocks[i] = uint32(rand.Intn(100))
 		blocks[i] = 1
 	}
 

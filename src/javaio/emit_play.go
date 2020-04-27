@@ -165,27 +165,45 @@ func EmitChunkSegmentData(blocks []uint32, result *bufio.Writer) {
 	EmitVarInt(int32(length), result)
 
 	currLong := uint64(0)
-	currLongBit := uint64(0)
+	start := uint64(0)
 
 	for _, block := range blocks {
-		// take each bit from the block
-		for i := 0; i < bitsPerBlock; i++ {
-			// extract bit
-			bit := (block >> i) & 1
-			// save bit into long
-			currLong |= (uint64(bit) << currLongBit)
-			currLongBit++
-			// when long is filled, emit and reset
-			if currLongBit == 64 {
-				EmitLong(int64(currLong), result) // potentially unsafe cast
-				currLong = 0
-				currLongBit = 0
-			}
+		var b uint64 = uint64(block) & ((1 << bitsPerBlock) - 1)
+		currLong |= b << start
+
+		if start + bitsPerBlock >= 64 {
+			EmitLong(int64(currLong), result)
+			currLong = 0
+			currLong |= b >> (64 - start)
+			start -= 64
 		}
+
+		start += bitsPerBlock
 	}
 
-	// flush any leftover that still needs to be emitted
-	if currLongBit > 0 {
-		EmitLong(int64(currLong), result) // potentially unsafe cast
-	}
+	// currLong := uint64(0)
+	// currLongBit := uint64(0)
+
+	// for _, block := range blocks {
+	// 	// take each bit from the block
+	// 	for i := 0; i < bitsPerBlock; i++ {
+	// 		// extract bit
+	// 		bit := (block >> i) & 1
+	// 		// save bit into long
+	// 		currLong |= uint64(bit) << currLongBit
+	// 		currLongBit++
+	// 		// when long is filled, emit and reset
+	// 		if currLongBit == 64 {
+	// 			EmitLong(int64(currLong), result) // potentially unsafe cast
+	// 			fmt.Printf("%064b\n", currLong)
+	// 			currLong = 0
+	// 			currLongBit = 0
+	// 		}
+	// 	}
+	// }
+
+	// // ensure no leftover bits
+	// if currLongBit > 0 {
+	// 	panic("Shouldn't reach this point")
+	// }
 }
