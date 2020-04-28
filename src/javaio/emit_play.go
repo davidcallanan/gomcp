@@ -134,8 +134,17 @@ func EmitChunkData(chunk ChunkData, result *bufio.Writer) {
 	})
 	result.Write([]byte("MOTION_BLOCKING")) // Array name
 	EmitInt(36, result) // Length of array
-	for i := 0; i < 288; i++ {
-		result.WriteByte(0xFE) // arbitrary value for the heightmap
+	for i := 0; i < 288 / 9; i++ {
+		// arbitrary value for the heightmap
+		result.WriteByte(0b00100000)
+		result.WriteByte(0b00010000)
+		result.WriteByte(0b00001000)
+		result.WriteByte(0b00000100)
+		result.WriteByte(0b00000010)
+		result.WriteByte(0b00000001)
+		result.WriteByte(0b00000000)
+		result.WriteByte(0b10000000)
+		result.WriteByte(0b01000000)
 	}
 	result.WriteByte(0) // Compound end
 

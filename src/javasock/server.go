@@ -176,3 +176,7 @@ func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) 
 		server.handlePlayerJoin(playerUuid.ID(), data.ClientsideUsername)
 	}
 }
+
+func (server *Server) SpawnPlayer() {
+	
+}
