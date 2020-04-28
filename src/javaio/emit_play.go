@@ -105,10 +105,22 @@ func EmitPlayerPositionAndLook(data PlayerPositionAndLook, result *bufio.Writer)
 }
 
 func EmitChunkData(chunk ChunkData, result *bufio.Writer) {
+	sectionMask := int32(0)
+
+	for i, section := range chunk.Sections {
+		if i >= 8 {
+			return
+		}
+
+		if len(section) != 0 {
+			sectionMask |= 1 << i
+		}
+	}
+
 	EmitInt(chunk.X, result)
 	EmitInt(chunk.Z, result)
 	EmitBoolean(chunk.IsNew, result)
-	EmitVarInt(int32(chunk.SegmentMask), result) // TODO: enforce correct section mask
+	EmitVarInt(sectionMask, result)
 	
 	// Hacked in NBT for heightmaps
 	// Maybe we have to send the length as well?
@@ -137,8 +149,14 @@ func EmitChunkData(chunk ChunkData, result *bufio.Writer) {
 	var dataBuf bytes.Buffer
 	dataWriter := bufio.NewWriter(&dataBuf)
 	
-	for _, segment := range chunk.Segments {
-		EmitChunkSegmentData(segment, dataWriter)
+	for i, section := range chunk.Sections {
+		if i >= 8 {
+			break
+		}
+
+		if len(section) != 0 {
+			EmitChunkSectionData(section, dataWriter)
+		}
 	}
 
 	dataWriter.Flush()
@@ -148,7 +166,7 @@ func EmitChunkData(chunk ChunkData, result *bufio.Writer) {
 	EmitVarInt(0, result) // no block entities
 }
 
-func EmitChunkSegmentData(blocks []uint32, result *bufio.Writer) {
+func EmitChunkSectionData(blocks []uint32, result *bufio.Writer) {
 	const bitsPerBlock = 14
 
 	EmitShort(4096, result) // block count
@@ -156,7 +174,7 @@ func EmitChunkSegmentData(blocks []uint32, result *bufio.Writer) {
 	// No palette because bits per block is full (can be optimized in future)
 
 	if len(blocks) != 4096 {
-		panic("There must be exactly 4096 blocks in each chunk segment")
+		panic("There must be exactly 4096 blocks in each chunk section")
 	}
 
 	bitLength := len(blocks) * bitsPerBlock
