@@ -21,11 +21,16 @@ func (client *client) close() {
 }
 
 type Server struct {
+	handlePlayerJoin func(uuid uint32, clientsideUsername string)
 }
 
 func NewServer() Server {
 	return Server {
 	}
+}
+
+func (server *Server) OnPlayerJoin(callback func(uuid uint32, clientsideUsername string)) {
+	server.handlePlayerJoin = callback
 }
 
 func (server *Server) AddConnection(input io.Reader, output io.Writer, closeCallback func()) {
@@ -124,9 +129,10 @@ func (server *Server) ProcessPing(client *client, ping javaio.Ping) {
 
 func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) {
 	println(data.ClientsideUsername)
+	playerUuid := uuid.New()
 
 	javaio.EmitClientboundPacketUncompressed(&javaio.LoginSuccess {
-		Uuid: uuid.New(),
+		Uuid: playerUuid,
 		Username: data.ClientsideUsername,
 	}, client.state, client.output)
 
@@ -164,5 +170,9 @@ func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) 
 				Sections: [][]uint32 { nil, nil, nil, blocks[:] },
 			}, client.state, client.output)
 		}
+	}
+
+	if server.handlePlayerJoin != nil {
+		server.handlePlayerJoin(playerUuid.ID(), data.ClientsideUsername)
 	}
 }
