@@ -7,7 +7,7 @@ import "bufio"
 // Serverbound
 
 func ParseLoginStart(data *bufio.Reader) (result LoginStart, err error) {
-	username, err := ParseString(data, 16)
+	username, err := ReadString(data, 16)
 
 	if err != nil {
 		return

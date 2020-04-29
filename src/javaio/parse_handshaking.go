@@ -9,22 +9,22 @@ import "bufio"
 // Serverbound
 
 func ParseHandshake(data *bufio.Reader) (result Handshake, err error) {
-	protocolVersion, err := ParseVarInt(data)
+	protocolVersion, err := ReadVarInt(data)
 	if err != nil {
 		return
 	}
 
-	serverAddress, err := ParseString(data, 256)
+	serverAddress, err := ReadString(data, 256)
 	if err != nil {
 		return
 	}
 
-	serverPort, err := ParseUnsignedShort(data)
+	serverPort, err := ReadUShort(data)
 	if err != nil {
 		return
 	}
 
-	nextStateId, err := ParseVarInt(data)
+	nextStateId, err := ReadVarInt(data)
 	if err != nil {
 		return
 	}

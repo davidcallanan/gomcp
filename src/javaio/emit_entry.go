@@ -64,7 +64,7 @@ func EmitClientboundPacketUncompressed(packet interface{}, state State, output *
 		panic("Internal package bug: packet id was not set while preparing to emit a packet")
 	}
 
-	EmitVarInt(packetId, packetIdWriter)
+	WriteVarInt(packetId, packetIdWriter)
 	dataWriter.Flush()
 	packetIdWriter.Flush()
 	length := packetIdBuf.Len() + dataBuf.Len()
@@ -74,7 +74,7 @@ func EmitClientboundPacketUncompressed(packet interface{}, state State, output *
 		panic("Emitted packet data was too large to hold its size in VarInt")
 	}
 
-	EmitVarInt(lengthInt32, output)
+	WriteVarInt(lengthInt32, output)
 	output.Write(packetIdBuf.Bytes())
 	output.Write(dataBuf.Bytes())
 	output.Flush()

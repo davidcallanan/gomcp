@@ -55,9 +55,9 @@ func EmitStatusResponse(status StatusResponse, result *bufio.Writer) {
 	}
 
 	// Emit packet
-	EmitString(string(jsonBytes), result)
+	WriteString(string(jsonBytes), result)
 }
 
 func EmitPong(pong Pong, result *bufio.Writer) {
-	EmitLong(pong.Payload, result)
+	WriteLong(pong.Payload, result)
 }

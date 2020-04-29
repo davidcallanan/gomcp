@@ -31,7 +31,7 @@ func ParseServerboundPacketUncompressed(data *bufio.Reader, state State) (result
 		return
 	}
 	
-	length, err := ParseVarInt(data)
+	length, err := ReadVarInt(data)
 	if err != nil {
 		return
 	}
@@ -39,7 +39,7 @@ func ParseServerboundPacketUncompressed(data *bufio.Reader, state State) (result
 	// Ensure one does not read past the length of the packet
 	data = newReaderSlice(data, int(length))
 
-	packetId, err := ParseVarInt(data)
+	packetId, err := ReadVarInt(data)
 	if err != nil {
 		return
 	}

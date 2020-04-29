@@ -11,6 +11,6 @@ func EmitLoginSuccess(loginSuccess LoginSuccess, result *bufio.Writer) {
 		panic("Username of LoginSuccess is too long (must not be over 16 runes)")
 	}
 
-	EmitString(loginSuccess.Uuid.String(), result)
-	EmitString(loginSuccess.Username, result)
+	WriteString(loginSuccess.Uuid.String(), result)
+	WriteString(loginSuccess.Username, result)
 }

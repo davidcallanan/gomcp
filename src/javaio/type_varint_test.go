@@ -4,7 +4,7 @@ import "testing"
 import "bufio"
 import "bytes"
 
-func TestParseVarInt(t *testing.T) {
+func TestReadVarInt(t *testing.T) {
 	iomap := []struct {
 		input []byte
 		output int
@@ -21,7 +21,7 @@ func TestParseVarInt(t *testing.T) {
 	}
 
 	for i, mapping := range iomap {
-		output, err := ParseVarInt(bufio.NewReader(bytes.NewReader(mapping.input)))
+		output, err := ReadVarInt(bufio.NewReader(bytes.NewReader(mapping.input)))
 
 		if err != nil {
 			t.Error(err)
@@ -40,22 +40,10 @@ func TestParseVarInt(t *testing.T) {
 	}
 
 	for i, mappingInput := range iemap {
-		_, err := ParseVarInt(bufio.NewReader(bytes.NewReader(mappingInput)))
+		_, err := ReadVarInt(bufio.NewReader(bytes.NewReader(mappingInput)))
 
 		if _, ok := err.(*MalformedPacketError); !ok {
 			t.Errorf("Expected MalformedPacketError for mapping %d but instead got: %v", i, err)
 		}
 	}
-}
-
-func TestLong(t *testing.T) {
-	t.Error("todo")
-}
-
-func TestUnsignedShort(t *testing.T) {
-	t.Error("todo")
-}
-
-func TestParseString(t *testing.T) {
-	t.Error("todo")
 }

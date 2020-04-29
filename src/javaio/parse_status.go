@@ -13,7 +13,7 @@ func ParseStatusRequest(data *bufio.Reader) (result StatusRequest, err error) {
 }
 
 func ParsePing(data *bufio.Reader) (result Ping, err error) {
-	payload, err := ParseLong(data)
+	payload, err := ReadLong(data)
 	if err != nil {
 		return
 	}

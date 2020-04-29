@@ -8,11 +8,11 @@ import "bytes"
 // Clientbound
 
 func EmitKeepAlive(data KeepAlive, result *bufio.Writer) {
-	EmitLong(data.Payload, result)
+	WriteLong(data.Payload, result)
 }
 
 func EmitJoinGame(data JoinGame, result *bufio.Writer) {
-	EmitInt(data.Eid, result)
+	WriteInt(data.Eid, result)
 
 	var gamemode byte
 	switch data.Gamemode {
@@ -33,7 +33,7 @@ func EmitJoinGame(data JoinGame, result *bufio.Writer) {
 		gamemode |= 0x8
 	}	
 
-	EmitUnsignedByte(gamemode, result)
+	WriteUByte(gamemode, result)
 
 	var dimension int32
 	switch data.Dimension {
@@ -47,36 +47,36 @@ func EmitJoinGame(data JoinGame, result *bufio.Writer) {
 		panic("What sort of a dimension is that?")
 	}
 
-	EmitInt(dimension, result)
+	WriteInt(dimension, result)
 
 	var hashedSeed int64 = 0 // seems kind of useless
-	EmitLong(hashedSeed, result)
+	WriteLong(hashedSeed, result)
 	
 	var maxPlayers byte = 0 // no longer utilized by client
-	EmitUnsignedByte(maxPlayers, result)
+	WriteUByte(maxPlayers, result)
 
 	var levelType string = "default" // seems kind of useless
-	EmitString(levelType, result)
+	WriteString(levelType, result)
 
 	if data.ViewDistance > 32 {
 		panic("Render distance must not be greater than 32")
 	}
 
-	EmitVarInt(data.ViewDistance, result)
-	EmitBoolean(data.ReducedDebugInfo, result)
-	EmitBoolean(data.EnableRespawnScreen, result)
+	WriteVarInt(data.ViewDistance, result)
+	WriteBool(data.ReducedDebugInfo, result)
+	WriteBool(data.EnableRespawnScreen, result)
 }
 
 func EmitCompassPosition(compassPosition CompassPosition, result *bufio.Writer) {
-	EmitBlockPosition(compassPosition.Location, result)
+	WriteBlockPos(compassPosition.Location, result)
 }
 
 func EmitPlayerPositionAndLook(data PlayerPositionAndLook, result *bufio.Writer) {
-	EmitDouble(data.X, result)
-	EmitDouble(data.Y, result)
-	EmitDouble(data.Z, result)
-	EmitFloat(data.Yaw, result)
-	EmitFloat(data.Pitch, result)
+	WriteDouble(data.X, result)
+	WriteDouble(data.Y, result)
+	WriteDouble(data.Z, result)
+	WriteFloat(data.Yaw, result)
+	WriteFloat(data.Pitch, result)
 
 	var flags byte
 
@@ -96,12 +96,12 @@ func EmitPlayerPositionAndLook(data PlayerPositionAndLook, result *bufio.Writer)
 		flags |= 0x08
 	}
 
-	EmitUnsignedByte(flags, result)
+	WriteUByte(flags, result)
 
 	// Seems pointless for now.
 	// Probably useful for interpolation, etc.
 	var teleportId int32 = 0
-	EmitVarInt(teleportId, result)
+	WriteVarInt(teleportId, result)
 }
 
 func EmitChunkData(chunk ChunkData, result *bufio.Writer) {
@@ -117,10 +117,10 @@ func EmitChunkData(chunk ChunkData, result *bufio.Writer) {
 		}
 	}
 
-	EmitInt(chunk.X, result)
-	EmitInt(chunk.Z, result)
-	EmitBoolean(chunk.IsNew, result)
-	EmitVarInt(sectionMask, result)
+	WriteInt(chunk.X, result)
+	WriteInt(chunk.Z, result)
+	WriteBool(chunk.IsNew, result)
+	WriteVarInt(sectionMask, result)
 	
 	// Hacked in NBT for heightmaps
 	// Maybe we have to send the length as well?
@@ -133,7 +133,7 @@ func EmitChunkData(chunk ChunkData, result *bufio.Writer) {
 		15, // Length of array name (2/2)
 	})
 	result.Write([]byte("MOTION_BLOCKING")) // Array name
-	EmitInt(36, result) // Length of array
+	WriteInt(36, result) // Length of array
 	for i := 0; i < 288 / 9; i++ {
 		// arbitrary value for the heightmap
 		result.WriteByte(0b00100000)
@@ -151,7 +151,7 @@ func EmitChunkData(chunk ChunkData, result *bufio.Writer) {
 	if chunk.IsNew {
 		// Set biome to void for the time being
 		for i := 0; i < 1024; i++ {
-			EmitInt(127, result)
+			WriteInt(127, result)
 		}
 	}
 
@@ -169,17 +169,17 @@ func EmitChunkData(chunk ChunkData, result *bufio.Writer) {
 	}
 
 	dataWriter.Flush()
-	EmitVarInt(int32(dataBuf.Len()), result) // potentially unsafe cast
+	WriteVarInt(int32(dataBuf.Len()), result) // potentially unsafe cast
 	result.Write(dataBuf.Bytes())
 
-	EmitVarInt(0, result) // no block entities
+	WriteVarInt(0, result) // no block entities
 }
 
 func EmitChunkSectionData(blocks []uint32, result *bufio.Writer) {
 	const bitsPerBlock = 14
 
-	EmitShort(4096, result) // block count
-	EmitUnsignedByte(bitsPerBlock, result)
+	WriteShort(4096, result) // block count
+	WriteUByte(bitsPerBlock, result)
 	// No palette because bits per block is full (can be optimized in future)
 
 	if len(blocks) != 4096 {
@@ -189,7 +189,7 @@ func EmitChunkSectionData(blocks []uint32, result *bufio.Writer) {
 	bitLength := len(blocks) * bitsPerBlock
 	length := (bitLength + bitLength % 64) / 64
 
-	EmitVarInt(int32(length), result)
+	WriteVarInt(int32(length), result)
 
 	currLong := uint64(0)
 	start := uint64(0)
@@ -199,7 +199,7 @@ func EmitChunkSectionData(blocks []uint32, result *bufio.Writer) {
 		currLong |= b << start
 
 		if start + bitsPerBlock >= 64 {
-			EmitLong(int64(currLong), result)
+			WriteLong(int64(currLong), result)
 			currLong = 0
 			currLong |= b >> (64 - start)
 			start -= 64
