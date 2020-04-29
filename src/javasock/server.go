@@ -108,7 +108,6 @@ func (server *Server) handleReceive(client *client) {
 }
 
 func (server *Server) ProcessProtocolDetermined(client *client, data javaio.ProtocolDetermined) {
-	println(data.NextState)
 	client.state = data.NextState
 }
 

@@ -9,16 +9,20 @@ import "bufio"
 
 func ParseServerboundPacketUncompressed(data *bufio.Reader, state State) (result interface{}, err error) {
 	if state == StateDeterminingProtocol {
-		isNetty, err_ := data.ReadByte()
+		// This pre-netty detection is pretty good.
+		// It does however require that there are at least 2 bytes in the
+		// first pre-netty packet, and that its second byte is not null.
+		// This means a legacy SLP packet from Minecraft versions before
+		// 1.4 is not detected, because its packet length is only 1 byte.
+
+		preview, _ := data.Peek(2)
 		
-		if err_ != nil {
-			err = &MalformedPacketError { "First packet ended immediately with no data" }
+		if len(preview) < 2 {
+			err = &MalformedPacketError { "Stream ended abruptly" }
 			return
 		}
-		
-		// This detection mechanism is not working correctly
-		if isNetty == 0 || true {
-			_ = data.UnreadByte()
+
+		if preview[1] == 0 {
 			result = ProtocolDetermined {
 				NextState: StateHandshaking,
 			}
