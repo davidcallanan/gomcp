@@ -9,5 +9,5 @@ type Handshake struct {
 	ProtocolVersion int32
 	ServerAddress string
 	ServerPort uint16
-	NextState int
+	NextState State
 }

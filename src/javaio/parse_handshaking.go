@@ -29,7 +29,7 @@ func ParseHandshake(data *bufio.Reader) (result Handshake, err error) {
 		return
 	}
 
-	var nextState int
+	var nextState State
 
 	if (nextStateId == 1) {
 		nextState = StateStatus

@@ -8,7 +8,7 @@ import "github.com/davidcallanan/gomcp/javaio"
 import "github.com/google/uuid"
 
 type client struct {
-	state int
+	state javaio.State
 	input *bufio.Reader
 	output *bufio.Writer
 	closeCallback func()
@@ -35,7 +35,7 @@ func (server *Server) OnPlayerJoin(callback func(uuid uint32, clientsideUsername
 
 func (server *Server) AddConnection(input io.Reader, output io.Writer, closeCallback func()) {
 	client := &client {
-		state: javaio.StateHandshaking,
+		state: javaio.StateDeterminingProtocol,
 		input: bufio.NewReader(input),
 		output: bufio.NewWriter(output),
 		closeCallback: closeCallback,
@@ -71,8 +71,10 @@ func (server *Server) handleReceive(client *client) {
 	if err != nil {
 		switch err.(type) {
 		case *javaio.UnsupportedPayloadError:
+			println("Unsupported payload from client")
 			return
 		case *javaio.MalformedPacketError:
+			println("Malformed packet from client.. closing connection")
 			client.close()
 			return
 		default:
@@ -81,6 +83,10 @@ func (server *Server) handleReceive(client *client) {
 	}
 
 	switch packet := packet.(type) {
+		// Determining Protocol
+	case javaio.ProtocolDetermined:
+		server.ProcessProtocolDetermined(client, packet)
+
 		// Handshaking
 	case javaio.Handshake:
 		server.ProcessHandshake(client, packet)
@@ -97,8 +103,13 @@ func (server *Server) handleReceive(client *client) {
 
 		// Default
 	default:
-		// panic("Unrecognized packet type")
+		println("Unrecognized packet type")
 	}
+}
+
+func (server *Server) ProcessProtocolDetermined(client *client, data javaio.ProtocolDetermined) {
+	println(data.NextState)
+	client.state = data.NextState
 }
 
 func (server *Server) ProcessHandshake(client *client, handshake javaio.Handshake) {

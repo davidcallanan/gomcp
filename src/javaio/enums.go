@@ -3,11 +3,19 @@ package javaio
 type State int
 const (
 	StateInvalid = iota
+	StateDeterminingProtocol = iota
 	StateHandshaking = iota
 	StateStatus = iota
 	StateLogin = iota
 	StatePlay = iota
+	StatePreNetty = iota
 )
+
+// type Protocol int
+// const (
+// 	ProtocolNetty = iota
+// 	ProtocolPreNetty = iota
+// )
 
 type Gamemode int
 const (

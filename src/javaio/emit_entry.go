@@ -7,7 +7,7 @@ import "bufio"
 
 // Clientbound
 
-func EmitClientboundPacketUncompressed(packet interface{}, state int, output *bufio.Writer) {
+func EmitClientboundPacketUncompressed(packet interface{}, state State, output *bufio.Writer) {
 	var packetId int32 = -1
 	var packetIdBuf bytes.Buffer
 	var dataBuf bytes.Buffer
@@ -80,6 +80,6 @@ func EmitClientboundPacketUncompressed(packet interface{}, state int, output *bu
 	output.Flush()
 }
 
-func EmitClientboundPacketCompressed(packet interface{}, state int, output *bufio.Writer) {
+func EmitClientboundPacketCompressed(packet interface{}, state State, output *bufio.Writer) {
 	panic("EmicClientboundPacketCompressed not implemented")
 }
