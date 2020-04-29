@@ -8,6 +8,11 @@ import "bufio"
 // Clientbound
 
 func EmitClientboundPacketUncompressed(packet interface{}, state State, output *bufio.Writer) {
+	if state == StatePreNetty {
+		WriteLegacyStatusResponse(*packet.(*LegacyStatusResponse), output)
+		return
+	}
+	
 	var packetId int32 = -1
 	var packetIdBuf bytes.Buffer
 	var dataBuf bytes.Buffer

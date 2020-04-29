@@ -101,6 +101,10 @@ func (server *Server) handleReceive(client *client) {
 	case javaio.LoginStart:
 		server.ProcessLoginStart(client, packet)
 
+		// Pre-Netty
+	case javaio.LegacyStatusRequest:
+		server.ProcessLegacyStatusRequest(client, packet)
+
 		// Default
 	default:
 		println("Unrecognized packet type")
@@ -129,6 +133,19 @@ func (server *Server) ProcessStatusRequest(client *client, _ javaio.StatusReques
 			{ Name: "§9§lever!!!", Uuid: "65bd239f-89f2-4cc7-ae8b-bb625525904e" },
 		},
 	}, client.state, client.output)
+}
+
+func (server *Server) ProcessLegacyStatusRequest(client *client, _ javaio.LegacyStatusRequest) {
+	go func() {
+		time.Sleep(time.Second / 5)
+		javaio.EmitClientboundPacketUncompressed(&javaio.LegacyStatusResponse {
+			ProtocolVersion: 578,
+			TextVersion: "Yop Yop!",
+			Description: "§e§lHello, World! §rThis MOTD works for legacy servers too!",
+			MaxPlayers: 21,
+			OnlinePlayers: 3,
+		}, client.state, client.output)
+	}()
 }
 
 func (server *Server) ProcessPing(client *client, ping javaio.Ping) {

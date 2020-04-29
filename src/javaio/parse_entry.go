@@ -31,7 +31,14 @@ func ParseServerboundPacketUncompressed(data *bufio.Reader, state State) (result
 				NextState: StatePreNetty,
 			}
 		}
-		
+		return
+	} else if (state == StatePreNetty) {
+		// Temporary hack-check
+		b, _ := data.ReadByte()
+		if b == 0xfe {
+			result = LegacyStatusRequest {
+			}
+		}
 		return
 	}
 	
@@ -74,8 +81,6 @@ func ParseServerboundPacketUncompressed(data *bufio.Reader, state State) (result
 		}
 	case StatePlay:
 		// panic("Not implemented")
-	case StatePreNetty:
-		println("Ignoring prenetty stream")
 	default:
 		panic("State does not match one of non-invalid predefined enum values")
 	}

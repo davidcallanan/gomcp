@@ -39,3 +39,12 @@ func WriteString(value string, stream *bufio.Writer) {
 	WriteVarInt(int32(len(value)), stream)
 	stream.WriteString(value)
 }
+
+func WriteUTF16(value []uint16, stream *bufio.Writer) {
+	// Little-endian
+	// Needs proper testing
+	for char := range value {
+		stream.WriteByte(byte(char))
+		stream.WriteByte(byte(char >> 8))
+	}
+}
