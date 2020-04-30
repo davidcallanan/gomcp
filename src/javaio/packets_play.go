@@ -6,10 +6,6 @@ type KeepAlive struct {
 	Payload int64
 }
 
-type CompassPosition struct {
-	Location BlockPosition
-}
-
 type PlayerPositionAndLook struct {
 	X float64
 	Y float64

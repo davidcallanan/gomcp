@@ -11,10 +11,6 @@ func EmitKeepAlive(data KeepAlive, result *bufio.Writer) {
 	WriteLong(data.Payload, result)
 }
 
-func EmitCompassPosition(compassPosition CompassPosition, result *bufio.Writer) {
-	WriteBlockPos(compassPosition.Location, result)
-}
-
 func EmitPlayerPositionAndLook(data PlayerPositionAndLook, result *bufio.Writer) {
 	WriteDouble(data.X, result)
 	WriteDouble(data.Y, result)
