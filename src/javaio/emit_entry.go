@@ -49,8 +49,8 @@ func EmitClientboundPacketUncompressed(packet interface{}, state ClientState, ou
 	case StatePlay:
 		switch packet := packet.(type) {
 		case *KeepAlive:
-			packetId = 0x21
-			EmitKeepAlive(*packet, dataWriter)
+			packetId = int32(PacketId_KeepAlive())
+			WriteKeepAlive(*packet, dataWriter)
 		case *JoinGame:
 			packetId = int32(PacketId_JoinGame(state.Protocol))
 			WriteJoinGame(*packet, dataWriter)	

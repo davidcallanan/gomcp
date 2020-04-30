@@ -7,10 +7,6 @@ import "bytes"
 
 // Clientbound
 
-func EmitKeepAlive(data KeepAlive, result *bufio.Writer) {
-	WriteLong(data.Payload, result)
-}
-
 func EmitChunkData(chunk ChunkData, result *bufio.Writer) {
 	sectionMask := int32(0)
 
