@@ -11,62 +11,6 @@ func EmitKeepAlive(data KeepAlive, result *bufio.Writer) {
 	WriteLong(data.Payload, result)
 }
 
-func EmitJoinGame(data JoinGame, result *bufio.Writer) {
-	WriteInt(data.Eid, result)
-
-	var gamemode byte
-	switch data.Gamemode {
-	case GamemodeSurvival:
-		gamemode = 0
-	case GamemodeCreative:
-		gamemode = 1
-	case GamemodeAdventure:
-		gamemode = 2
-	case GamemodeSpectator:
-		gamemode = 3
-	default:
-		panic("Gamemode does not match one of non-invalid predefined enum types")
-	}
-
-	if data.Hardcore {
-		// Enable hardcore flag
-		gamemode |= 0x8
-	}	
-
-	WriteUByte(gamemode, result)
-
-	var dimension int32
-	switch data.Dimension {
-	case DimensionOverworld:
-		dimension = 0
-	case DimensionNether:
-		dimension = -1
-	case DimensionEnd:
-		dimension = 1
-	default:
-		panic("What sort of a dimension is that?")
-	}
-
-	WriteInt(dimension, result)
-
-	var hashedSeed int64 = 0 // seems kind of useless
-	WriteLong(hashedSeed, result)
-	
-	var maxPlayers byte = 0 // no longer utilized by client
-	WriteUByte(maxPlayers, result)
-
-	var levelType string = "default" // seems kind of useless
-	WriteString(levelType, result)
-
-	if data.ViewDistance > 32 {
-		panic("Render distance must not be greater than 32")
-	}
-
-	WriteVarInt(data.ViewDistance, result)
-	WriteBool(data.ReducedDebugInfo, result)
-	WriteBool(data.EnableRespawnScreen, result)
-}
-
 func EmitCompassPosition(compassPosition CompassPosition, result *bufio.Writer) {
 	WriteBlockPos(compassPosition.Location, result)
 }

@@ -9,6 +9,7 @@ import "github.com/google/uuid"
 
 type client struct {
 	state javaio.State
+	protocol uint
 	input *bufio.Reader
 	output *bufio.Writer
 	closeCallback func()
@@ -60,7 +61,7 @@ func (server *Server) AddConnection(input io.Reader, output io.Writer, closeCall
 
 			javaio.EmitClientboundPacketUncompressed(&javaio.KeepAlive {
 				Payload: now.Unix(),
-			}, client.state, client.output)
+			}, client.state, client.protocol, client.output)
 		}
 	}()
 }
@@ -120,6 +121,7 @@ func (server *Server) ProcessProtocolDetermined(client *client, data javaio.Prot
 }
 
 func (server *Server) ProcessHandshake(client *client, handshake javaio.Handshake) {
+	client.protocol = uint(handshake.Protocol) + 81
 	client.state = handshake.NextState
 }
 
@@ -136,7 +138,7 @@ func (server *Server) ProcessStatusRequest(client *client, _ javaio.StatusReques
 			{ Name: "§8amazing thing", Uuid: "65bd239f-89f2-4cc7-ae8b-bb625525904e" },
 			{ Name: "§9§lever!!!", Uuid: "65bd239f-89f2-4cc7-ae8b-bb625525904e" },
 		},
-	}, client.state, client.output)
+	}, client.state, client.protocol, client.output)
 }
 
 func (server *Server) ProcessLegacyStatusRequest(client *client, _ javaio.T_002E_StatusRequest) {
@@ -146,7 +148,7 @@ func (server *Server) ProcessLegacyStatusRequest(client *client, _ javaio.T_002E
 		Description: "§e§lHello, World!  §rThis MOTD works for        legacy servers too!",
 		MaxPlayers: 21,
 		OnlinePlayers: 3,
-	}, client.state, client.output)
+	}, client.state, client.protocol, client.output)
 }
 
 func (server *Server) ProcessVeryLegacyStatusRequest(client *client, _ javaio.VeryLegacyStatusRequest) {
@@ -154,13 +156,13 @@ func (server *Server) ProcessVeryLegacyStatusRequest(client *client, _ javaio.Ve
 		Description: "Hello Legacy Client!",
 		MaxPlayers: 22,
 		OnlinePlayers: 4,
-	}, client.state, client.output)
+	}, client.state, client.protocol, client.output)
 }
 
 func (server *Server) ProcessPing(client *client, ping javaio.Ping) {
 	javaio.EmitClientboundPacketUncompressed(&javaio.Pong {
 		Payload: ping.Payload,
-	}, client.state, client.output)
+	}, client.state, client.protocol, client.output)
 }
 
 func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) {
@@ -170,27 +172,27 @@ func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) 
 	javaio.EmitClientboundPacketUncompressed(&javaio.LoginSuccess {
 		Uuid: playerUuid,
 		Username: data.ClientsideUsername,
-	}, client.state, client.output)
+	}, client.state, client.protocol, client.output)
 
 	client.state = javaio.StatePlay
 
 	javaio.EmitClientboundPacketUncompressed(&javaio.JoinGame {
-		Eid: 0,
+		EntityId: 0,
 		Gamemode: javaio.GamemodeCreative,
 		Hardcore: false,
 		Dimension: javaio.DimensionOverworld,
 		ViewDistance: 1,
 		ReducedDebugInfo: false,
 		EnableRespawnScreen: false,
-	}, client.state, client.output)
+	}, client.state, client.protocol, client.output)
 
 	javaio.EmitClientboundPacketUncompressed(&javaio.CompassPosition {
 		Location: javaio.BlockPosition { X: 0, Y: 64, Z: 0 },
-	}, client.state, client.output)
+	}, client.state, client.protocol, client.output)
 
 	javaio.EmitClientboundPacketUncompressed(&javaio.PlayerPositionAndLook {
 		X: 0, Y: 64, Z: 0, Yaw: 0, Pitch: 0,
-	}, client.state, client.output)
+	}, client.state, client.protocol, client.output)
 
 	var blocks [4096]uint32 // initialized to 0 (I hope that corresponds to stone)
 
@@ -204,7 +206,7 @@ func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) 
 			javaio.EmitClientboundPacketUncompressed(&javaio.ChunkData {
 				X: int32(x), Z: int32(z), IsNew: true,
 				Sections: [][]uint32 { nil, nil, nil, blocks[:] },
-			}, client.state, client.output)
+			}, client.state, client.protocol, client.output)
 		}
 	}
 

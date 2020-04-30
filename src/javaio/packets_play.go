@@ -6,16 +6,6 @@ type KeepAlive struct {
 	Payload int64
 }
 
-type JoinGame struct {
-	Eid int32
-	Gamemode Gamemode
-	Hardcore bool
-	Dimension Dimension
-	ViewDistance int32
-	ReducedDebugInfo bool
-	EnableRespawnScreen bool
-}
-
 type CompassPosition struct {
 	Location BlockPosition
 }

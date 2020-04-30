@@ -9,7 +9,7 @@ import "bufio"
 // Serverbound
 
 func ParseHandshake(data *bufio.Reader) (result Handshake, err error) {
-	protocolVersion, err := ReadVarInt(data)
+	protocol, err := ReadVarInt(data)
 	if err != nil {
 		return
 	}
@@ -41,7 +41,7 @@ func ParseHandshake(data *bufio.Reader) (result Handshake, err error) {
 	}
 
 	result = Handshake {
-		ProtocolVersion: protocolVersion,
+		Protocol: protocol,
 		ServerAddress: serverAddress,
 		ServerPort: serverPort,
 		NextState: nextState,

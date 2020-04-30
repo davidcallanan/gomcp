@@ -7,7 +7,7 @@ import "bufio"
 
 // Clientbound
 
-func EmitClientboundPacketUncompressed(packet interface{}, state State, output *bufio.Writer) {
+func EmitClientboundPacketUncompressed(packet interface{}, state State, protocol uint, output *bufio.Writer) {
 	if state == StatePreNetty {
 		Write_002E_StatusResponse(*packet.(*T_002E_StatusResponse), output)
 		output.Flush()
@@ -52,8 +52,8 @@ func EmitClientboundPacketUncompressed(packet interface{}, state State, output *
 			packetId = 0x21
 			EmitKeepAlive(*packet, dataWriter)
 		case *JoinGame:
-			packetId = 0x26
-			EmitJoinGame(*packet, dataWriter)	
+			packetId = int32(JoinGame_PacketId(protocol))
+			WriteJoinGame(*packet, dataWriter)	
 		case *CompassPosition:
 			packetId = 0x4E
 			EmitCompassPosition(*packet, dataWriter)

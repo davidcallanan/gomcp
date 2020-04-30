@@ -6,7 +6,7 @@ package javaio
 // Serverbound
 
 type Handshake struct {
-	ProtocolVersion int32
+	Protocol int32
 	ServerAddress string
 	ServerPort uint16
 	NextState State
