@@ -14,29 +14,65 @@ func ParseServerboundPacketUncompressed(data *bufio.Reader, state State) (result
 		// first pre-netty packet, and that its second byte is not null.
 		// This means a legacy SLP packet from Minecraft versions before
 		// 1.4 is not detected, because its packet length is only 1 byte.
-
-		preview, _ := data.Peek(2)
+		// A hack is used to determine if only 1 byte is available.
 		
-		if len(preview) < 2 {
-			err = &MalformedPacketError { "Stream ended abruptly" }
+		// This check breaks the intuitive purity contract.
+		// This changes the contract to take into account the
+		// number of buffered bytes. This new contract must be
+		// tested within unit tests in the future.
+		if data.Buffered() >= 2 {
+			preview, _ := data.Peek(2)
+		
+			if len(preview) < 2 {
+				err = &MalformedPacketError { "Stream ended abruptly" }
+				return
+			}
+
+			if preview[1] == 0 {
+				result = ProtocolDetermined {
+					NextState: StateHandshaking,
+				}
+			} else {
+				result = ProtocolDetermined {
+					NextState: StatePreNetty,
+				}
+			}
+
+			return
+		} else {
+			preview, _ := data.Peek(1)
+			
+			if len(preview) < 1 {
+				err = &MalformedPacketError { "Stream ended abruptly" }
+				return
+			}
+
+			// TODO: add various checks for other starting bytes in the legacy protocol
+			if preview[0] == 0xfe {
+				result = ProtocolDetermined {
+					NextState: StateVeryPreNetty,
+				}
+			} else {
+				result = ProtocolDetermined {
+					NextState: StateHandshaking,
+				}
+			}
+
 			return
 		}
-
-		if preview[1] == 0 {
-			result = ProtocolDetermined {
-				NextState: StateHandshaking,
-			}
-		} else {
-			result = ProtocolDetermined {
-				NextState: StatePreNetty,
-			}
-		}
-		return
 	} else if (state == StatePreNetty) {
 		// Temporary hack-check
 		b, _ := data.ReadByte()
 		if b == 0xfe {
 			result = LegacyStatusRequest {
+			}
+		}
+		return
+	} else if (state == StateVeryPreNetty) {
+		// Temporary hack-check
+		b, _ := data.ReadByte()
+		if b == 0xfe {
+			result = VeryLegacyStatusRequest {
 			}
 		}
 		return

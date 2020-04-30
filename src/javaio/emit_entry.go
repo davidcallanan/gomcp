@@ -12,6 +12,10 @@ func EmitClientboundPacketUncompressed(packet interface{}, state State, output *
 		WriteLegacyStatusResponse(*packet.(*LegacyStatusResponse), output)
 		output.Flush()
 		return
+	} else if state == StateVeryPreNetty {
+		WriteVeryLegacyStatusResponse(*packet.(*VeryLegacyStatusResponse), output)
+		output.Flush()
+		return
 	}
 	
 	var packetId int32 = -1

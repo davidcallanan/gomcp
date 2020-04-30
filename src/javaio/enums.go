@@ -9,6 +9,7 @@ const (
 	StateLogin = iota
 	StatePlay = iota
 	StatePreNetty = iota
+	StateVeryPreNetty = iota
 )
 
 // type Protocol int

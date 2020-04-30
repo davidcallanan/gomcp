@@ -105,6 +105,10 @@ func (server *Server) handleReceive(client *client) {
 	case javaio.LegacyStatusRequest:
 		server.ProcessLegacyStatusRequest(client, packet)
 
+		// Very Pre-Netty
+	case javaio.VeryLegacyStatusRequest:
+		server.ProcessVeryLegacyStatusRequest(client, packet)
+
 		// Default
 	default:
 		// println("Unrecognized packet type")
@@ -142,6 +146,14 @@ func (server *Server) ProcessLegacyStatusRequest(client *client, _ javaio.Legacy
 		Description: "§e§lHello, World!  §rThis MOTD works for        legacy servers too!",
 		MaxPlayers: 21,
 		OnlinePlayers: 3,
+	}, client.state, client.output)
+}
+
+func (server *Server) ProcessVeryLegacyStatusRequest(client *client, _ javaio.VeryLegacyStatusRequest) {
+	javaio.EmitClientboundPacketUncompressed(&javaio.VeryLegacyStatusResponse {
+		Description: "Hello Legacy Client!",
+		MaxPlayers: 22,
+		OnlinePlayers: 4,
 	}, client.state, client.output)
 }
 
