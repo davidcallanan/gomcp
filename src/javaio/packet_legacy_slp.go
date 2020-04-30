@@ -23,7 +23,7 @@ func WriteLegacyStatusResponse(status LegacyStatusResponse, stream *bufio.Writer
 	onlinePlayers := utf16.Encode([]rune(string(status.OnlinePlayers)))
 	dataLength := int16(3 + len(protocolVersion) + 1 + len(textVersion) + 1 + len(description) + 1 + len(onlinePlayers) + 1 + len(maxPlayers)) // potentially unsafe cast?
 	magic := []byte { 0x00, 0xa7, 0x00, 0x31, 0x00, 0x00 }
-	delimeter := []byte {0x00, 0x00}
+	delimeter := []byte { 0x00, 0x00 }
 
 	stream.WriteByte(packetId)
 	WriteShort(dataLength, stream)

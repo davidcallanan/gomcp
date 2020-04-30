@@ -138,9 +138,8 @@ func (server *Server) ProcessStatusRequest(client *client, _ javaio.StatusReques
 func (server *Server) ProcessLegacyStatusRequest(client *client, _ javaio.LegacyStatusRequest) {
 	javaio.EmitClientboundPacketUncompressed(&javaio.LegacyStatusResponse {
 		ProtocolVersion: 578,
-		TextVersion: "Yop Yop!",
-		// Description: "§e§lHello, World! §rThis MOTD works for legacy servers too!",
-		Description: "Hello, World! This MOTD works for legacy servers too!",
+		TextVersion: "1.4",
+		Description: "§e§lHello, World!   §rThis MOTD works for        legacy servers too!",
 		MaxPlayers: 21,
 		OnlinePlayers: 3,
 	}, client.state, client.output)

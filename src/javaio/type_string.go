@@ -42,8 +42,7 @@ func WriteString(value string, stream *bufio.Writer) {
 
 func WriteUTF16(value []uint16, stream *bufio.Writer) {
 	// Big-endian
-	// Needs proper testing
-	for char := range value {
+	for _, char := range value {
 		stream.WriteByte(byte(char >> 8))
 		stream.WriteByte(byte(char))
 	}
