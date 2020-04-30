@@ -11,39 +11,6 @@ func EmitKeepAlive(data KeepAlive, result *bufio.Writer) {
 	WriteLong(data.Payload, result)
 }
 
-func EmitPlayerPositionAndLook(data PlayerPositionAndLook, result *bufio.Writer) {
-	WriteDouble(data.X, result)
-	WriteDouble(data.Y, result)
-	WriteDouble(data.Z, result)
-	WriteFloat(data.Yaw, result)
-	WriteFloat(data.Pitch, result)
-
-	var flags byte
-
-	if data.IsRelX {
-		flags |= 0x01
-	}
-	if data.IsRelY {
-		flags |= 0x02
-	}
-	if data.IsRelZ {
-		flags |= 0x04
-	}
-	if data.IsRelYaw {
-		flags |= 0x10
-	}
-	if data.IsRelPitch {
-		flags |= 0x08
-	}
-
-	WriteUByte(flags, result)
-
-	// Seems pointless for now.
-	// Probably useful for interpolation, etc.
-	var teleportId int32 = 0
-	WriteVarInt(teleportId, result)
-}
-
 func EmitChunkData(chunk ChunkData, result *bufio.Writer) {
 	sectionMask := int32(0)
 

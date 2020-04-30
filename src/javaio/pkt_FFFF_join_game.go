@@ -14,7 +14,7 @@ type JoinGame struct {
 	EnableRespawnScreen bool
 }
 
-func JoinGame_PacketId(protocol uint) int {
+func PacketId_JoinGame(protocol uint) int {
 	// TODO: this is an approximation
 	if protocol >= 0x0286 {
 		// 1.15

@@ -52,14 +52,14 @@ func EmitClientboundPacketUncompressed(packet interface{}, state ClientState, ou
 			packetId = 0x21
 			EmitKeepAlive(*packet, dataWriter)
 		case *JoinGame:
-			packetId = int32(JoinGame_PacketId(state.Protocol))
+			packetId = int32(PacketId_JoinGame(state.Protocol))
 			WriteJoinGame(*packet, dataWriter)	
 		case *CompassPosition:
 			packetId = int32(PacketId_CompassPosition(state.Protocol))
 			WriteCompassPosition(*packet, dataWriter)
 		case *PlayerPositionAndLook:
-			packetId = 0x36
-			EmitPlayerPositionAndLook(*packet, dataWriter)
+			packetId = int32(PacketId_PlayerPositionAndLook(state.Protocol))
+			WritePlayerPositionAndLook(*packet, dataWriter)
 		case *ChunkData:
 			packetId = 0x22
 			EmitChunkData(*packet, dataWriter)
