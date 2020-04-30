@@ -10,6 +10,7 @@ import "bufio"
 func EmitClientboundPacketUncompressed(packet interface{}, state State, output *bufio.Writer) {
 	if state == StatePreNetty {
 		WriteLegacyStatusResponse(*packet.(*LegacyStatusResponse), output)
+		output.Flush()
 		return
 	}
 	
