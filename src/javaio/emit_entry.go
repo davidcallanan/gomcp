@@ -7,12 +7,12 @@ import "bufio"
 
 // Clientbound
 
-func EmitClientboundPacketUncompressed(packet interface{}, state State, protocol uint, output *bufio.Writer) {
-	if state == StatePreNetty {
+func EmitClientboundPacketUncompressed(packet interface{}, state ClientState, output *bufio.Writer) {
+	if state.State == StatePreNetty {
 		Write_002E_StatusResponse(*packet.(*T_002E_StatusResponse), output)
 		output.Flush()
 		return
-	} else if state == StateVeryPreNetty {
+	} else if state.State == StateVeryPreNetty {
 		WriteVeryLegacyStatusResponse(*packet.(*VeryLegacyStatusResponse), output)
 		output.Flush()
 		return
@@ -24,7 +24,7 @@ func EmitClientboundPacketUncompressed(packet interface{}, state State, protocol
 	packetIdWriter := bufio.NewWriter(&packetIdBuf)
 	dataWriter := bufio.NewWriter(&dataBuf)
 
-	switch state {
+	switch state.State {
 	case StateHandshaking:
 		panic("Packet cannot be emitted in handshaking state")
 	case StateStatus:
@@ -52,7 +52,7 @@ func EmitClientboundPacketUncompressed(packet interface{}, state State, protocol
 			packetId = 0x21
 			EmitKeepAlive(*packet, dataWriter)
 		case *JoinGame:
-			packetId = int32(JoinGame_PacketId(protocol))
+			packetId = int32(JoinGame_PacketId(state.Protocol))
 			WriteJoinGame(*packet, dataWriter)	
 		case *CompassPosition:
 			packetId = 0x4E
@@ -90,6 +90,6 @@ func EmitClientboundPacketUncompressed(packet interface{}, state State, protocol
 	output.Flush()
 }
 
-func EmitClientboundPacketCompressed(packet interface{}, state State, output *bufio.Writer) {
+func EmitClientboundPacketCompressed(packet interface{}, state ClientState, output *bufio.Writer) {
 	panic("EmicClientboundPacketCompressed not implemented")
 }
