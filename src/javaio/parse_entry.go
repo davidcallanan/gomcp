@@ -16,6 +16,9 @@ func ParseServerboundPacketUncompressed(data *bufio.Reader, state State) (result
 		// 1.4 is not detected, because its packet length is only 1 byte.
 		// A hack is used to determine if only 1 byte is available.
 		
+		// Block until first byte is received so following check works correctly.
+		_, _ = data.Peek(1) 
+
 		// This check breaks the intuitive purity contract.
 		// This changes the contract to take into account the
 		// number of buffered bytes. This new contract must be
