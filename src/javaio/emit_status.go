@@ -15,7 +15,7 @@ type statusJson struct {
 	} `json:"description"`
 	FaviconPng string `json:"favicon,omitempty"`
 	Version struct {
-		Text string `json:"name"`
+		Name string `json:"name"`
 		Protocol int32 `json:"protocol"`
 	} `json:"version"`
 	Players struct {
@@ -34,8 +34,8 @@ func EmitStatusResponse(status StatusResponse, result *bufio.Writer) {
 	// Generate JSON
 	jsonObj := statusJson {}
 	jsonObj.Description.Text = status.Description
-	jsonObj.Version.Text = status.VersionText
-	jsonObj.Version.Protocol = status.VersionProtocol
+	jsonObj.Version.Name = status.Version
+	jsonObj.Version.Protocol = status.Protocol
 	jsonObj.Players.Max = status.MaxPlayers
 	jsonObj.Players.Online = status.OnlinePlayers
 	if len(status.FaviconPng) > 0 {

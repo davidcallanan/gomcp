@@ -67,7 +67,7 @@ func ParseServerboundPacketUncompressed(data *bufio.Reader, state State) (result
 		// Temporary hack-check
 		b, _ := data.ReadByte()
 		if b == 0xfe {
-			result = LegacyStatusRequest {
+			result = T_002E_StatusRequest {
 			}
 		}
 		return

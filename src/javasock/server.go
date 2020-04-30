@@ -102,7 +102,7 @@ func (server *Server) handleReceive(client *client) {
 		server.ProcessLoginStart(client, packet)
 
 		// Pre-Netty
-	case javaio.LegacyStatusRequest:
+	case javaio.T_002E_StatusRequest:
 		server.ProcessLegacyStatusRequest(client, packet)
 
 		// Very Pre-Netty
@@ -125,9 +125,9 @@ func (server *Server) ProcessHandshake(client *client, handshake javaio.Handshak
 
 func (server *Server) ProcessStatusRequest(client *client, _ javaio.StatusRequest) {
 	javaio.EmitClientboundPacketUncompressed(&javaio.StatusResponse {
+		Protocol: 578,
+		Version: "Outdated Minecraft",
 		Description: "§e§lHello, World!\n§rWelcome to this §kk§repic§kk§r server",
-		VersionText: "Outdated Minecraft",
-		VersionProtocol: 578,
 		MaxPlayers: 20,
 		OnlinePlayers: 2,
 		PlayerSample: []javaio.StatusResponsePlayer {
@@ -139,10 +139,10 @@ func (server *Server) ProcessStatusRequest(client *client, _ javaio.StatusReques
 	}, client.state, client.output)
 }
 
-func (server *Server) ProcessLegacyStatusRequest(client *client, _ javaio.LegacyStatusRequest) {
-	javaio.EmitClientboundPacketUncompressed(&javaio.LegacyStatusResponse {
-		ProtocolVersion: 578,
-		TextVersion: "1.15",
+func (server *Server) ProcessLegacyStatusRequest(client *client, _ javaio.T_002E_StatusRequest) {
+	javaio.EmitClientboundPacketUncompressed(&javaio.T_002E_StatusResponse {
+		Protocol: 578,
+		Version: "1.15",
 		Description: "§e§lHello, World!  §rThis MOTD works for        legacy servers too!",
 		MaxPlayers: 21,
 		OnlinePlayers: 3,

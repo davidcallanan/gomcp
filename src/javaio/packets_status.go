@@ -5,8 +5,8 @@ package javaio
 // Clientbound
 
 type StatusResponse struct {
-	VersionProtocol int32
-	VersionText string
+	Protocol int32
+	Version string
 	Description string
 	FaviconPng []byte
 	MaxPlayers int
