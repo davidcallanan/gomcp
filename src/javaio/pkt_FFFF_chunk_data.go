@@ -85,7 +85,17 @@ func WriteChunkData(ctx ClientContext, chunk ChunkData, result *bufio.Writer) {
 		}
 
 		if len(section) != 0 {
-			EmitChunkSectionData(ctx, chunk.IsNew, section, dataWriter)
+			EmitChunkSectionData(section, dataWriter)
+		}
+	}
+
+	if ctx.Protocol < 0x0286 {
+		// 1.14 approximation -- biomes are added here in this version
+		if chunk.IsNew {
+			// Set biome to void for the time being
+			for i := 0; i < 256; i++ {
+				WriteInt(127, dataWriter)
+			}
 		}
 	}
 
@@ -96,7 +106,7 @@ func WriteChunkData(ctx ClientContext, chunk ChunkData, result *bufio.Writer) {
 	WriteVarInt(0, result) // no block entities
 }
 
-func EmitChunkSectionData(ctx ClientContext, isNew bool, blocks []uint32, result *bufio.Writer) {
+func EmitChunkSectionData(blocks []uint32, result *bufio.Writer) {
 	const bitsPerBlock = 14
 
 	WriteShort(4096, result) // block count
@@ -154,14 +164,4 @@ func EmitChunkSectionData(ctx ClientContext, isNew bool, blocks []uint32, result
 	// if currLongBit > 0 {
 	// 	panic("Shouldn't reach this point")
 	// }
-
-	if ctx.Protocol < 0x0286 {
-		// 1.14 approximation -- biomes are added here in this version
-		if isNew {
-			// Set biome to void for the time being
-			for i := 0; i < 256; i++ {
-				WriteInt(127, result)
-			}
-		}
-	}
 }
