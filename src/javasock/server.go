@@ -194,21 +194,35 @@ func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) 
 		X: 0, Y: 64, Z: 0, Yaw: 0, Pitch: 0,
 	}, client.state, client.output)
 
-	var blocks [4096]uint32
+	var blocksA [4096]uint32
+	var blocksB [4096]uint32
+	var blocksC [4096]uint32
 
-	for i := range blocks {
-		if i % 2 == 0 {
-			blocks[i] = 1
+	for i := range blocksA {
+		if i < 256 {
+			blocksA[i] = 33
 		} else {
-			blocks[i] = 2
+			blocksA[i] = 1
 		}
 	}
 
-	for x := -1; x <= 1; x++ {
-		for z := -1; z <= 1; z++ {
+	for i := range blocksB {
+		blocksB[i] = 1
+	}
+
+	for i := range blocksC {
+		if i > 4095 - 256 {
+			blocksC[i] = 9
+		} else {
+			blocksC[i] = 10
+		}
+	}
+
+	for x := -10; x <= 10; x++ {
+		for z := -10; z <= 10; z++ {
 			javaio.EmitClientboundPacketUncompressed(&javaio.ChunkData {
 				X: int32(x), Z: int32(z), IsNew: true,
-				Sections: [][]uint32 { nil, nil, nil, blocks[:] },
+				Sections: [][]uint32 { nil, blocksA[:], blocksB[:], blocksC[:] },
 			}, client.state, client.output)
 		}
 	}
