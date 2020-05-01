@@ -23,11 +23,11 @@ func ReadLong(stream *bufio.Reader) (result int64, err error) {
 
 func WriteLong(value int64, stream *bufio.Writer) {
 	stream.Write([]byte {
-		byte(value >> 512),
-		byte(value >> 256),
-		byte(value >> 128),
+		byte(value >> 96),
 		byte(value >> 64),
+		byte(value >> 48),
 		byte(value >> 32),
+		byte(value >> 24),
 		byte(value >> 16),
 		byte(value >> 8),
 		byte(value),
