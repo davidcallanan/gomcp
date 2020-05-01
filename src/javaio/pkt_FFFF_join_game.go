@@ -27,7 +27,7 @@ func PacketId_JoinGame(protocol uint) int {
 	return -1
 }
 
-func WriteJoinGame(data JoinGame, stream *bufio.Writer) {
+func WriteJoinGame(ctx ClientContext, data JoinGame, stream *bufio.Writer) {
 	WriteInt(data.EntityId, stream)
 
 	var gamemode byte
@@ -65,8 +65,11 @@ func WriteJoinGame(data JoinGame, stream *bufio.Writer) {
 
 	WriteInt(dimension, stream)
 
-	var hashedSeed int64 = 0 // seems kind of useless
-	WriteLong(hashedSeed, stream)
+	if ctx.Protocol > 0x0286 { // approximation
+		// only neccessary in 1.15
+		var hashedSeed int64 = 0 // seems kind of useless, maybe used for biome interpolation
+		WriteLong(hashedSeed, stream)
+	}
 	
 	var maxPlayers byte = 0 // no longer utilized by client
 	WriteUByte(maxPlayers, stream)
@@ -80,5 +83,9 @@ func WriteJoinGame(data JoinGame, stream *bufio.Writer) {
 
 	WriteVarInt(data.ViewDistance, stream)
 	WriteBool(data.ReducedDebugInfo, stream)
-	WriteBool(data.EnableRespawnScreen, stream)
+
+	if ctx.Protocol > 0x0286 { // approximation
+		// only available in 1.15
+		WriteBool(data.EnableRespawnScreen, stream)
+	}
 }

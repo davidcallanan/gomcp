@@ -8,9 +8,16 @@ type KeepAlive struct {
 	Payload int64
 }
 
-func PacketId_KeepAlive() int {
-	// TODO: check that this remains consistent across versions
-	return 0x0F
+func PacketId_KeepAlive(protocol uint) int {
+	// TODO: this is an approximation
+	if protocol >= 0x0286 {
+		// 1.15
+		return 0x21
+	} else {
+		// 1.14
+		return 0x20
+	}
+	// todo older versions
 }
 
 func WriteKeepAlive(data KeepAlive, stream *bufio.Writer) {

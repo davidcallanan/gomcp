@@ -196,6 +196,7 @@ func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) 
 	}, client.state, client.output)
 
 	if client.state.Protocol < 0x0286 {
+		println("Returning")
 		return
 	}
 
