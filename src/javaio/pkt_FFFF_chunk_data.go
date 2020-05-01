@@ -3,11 +3,26 @@ package javaio
 import "bufio"
 import "bytes"
 
-/**  Serverbound packet emission is not implemented.  **/
+type ChunkData struct {
+	X int32
+	Z int32
+	IsNew bool
+	Sections [][]uint32
+}
 
-// Clientbound
+func PacketId_ChunkData(protocol uint) int {
+	// TODO: this is an approximation
+	if protocol >= 0x0286 {
+		// 1.15
+		return 0x22
+	} else {
+		// 1.14
+		return 0x21
+	}
+	// todo older versions
+}
 
-func EmitChunkData(chunk ChunkData, result *bufio.Writer) {
+func WriteChunkData(ctx ClientContext, chunk ChunkData, result *bufio.Writer) {
 	sectionMask := int32(0)
 
 	for i, section := range chunk.Sections {
@@ -51,10 +66,13 @@ func EmitChunkData(chunk ChunkData, result *bufio.Writer) {
 	}
 	result.WriteByte(0) // Compound end
 
-	if chunk.IsNew {
-		// Set biome to void for the time being
-		for i := 0; i < 1024; i++ {
-			WriteInt(127, result)
+	if ctx.Protocol >= 0x0286 {
+		// 1.15 approximation -- biomes are now added here
+		if chunk.IsNew {
+			// Set biome to void for the time being
+			for i := 0; i < 1024; i++ {
+				WriteInt(127, result)
+			}
 		}
 	}
 
@@ -67,7 +85,7 @@ func EmitChunkData(chunk ChunkData, result *bufio.Writer) {
 		}
 
 		if len(section) != 0 {
-			EmitChunkSectionData(section, dataWriter)
+			EmitChunkSectionData(ctx, chunk.IsNew, section, dataWriter)
 		}
 	}
 
@@ -78,7 +96,7 @@ func EmitChunkData(chunk ChunkData, result *bufio.Writer) {
 	WriteVarInt(0, result) // no block entities
 }
 
-func EmitChunkSectionData(blocks []uint32, result *bufio.Writer) {
+func EmitChunkSectionData(ctx ClientContext, isNew bool, blocks []uint32, result *bufio.Writer) {
 	const bitsPerBlock = 14
 
 	WriteShort(4096, result) // block count
@@ -136,4 +154,14 @@ func EmitChunkSectionData(blocks []uint32, result *bufio.Writer) {
 	// if currLongBit > 0 {
 	// 	panic("Shouldn't reach this point")
 	// }
+
+	if ctx.Protocol < 0x0286 {
+		// 1.14 approximation -- biomes are added here in this version
+		if isNew {
+			// Set biome to void for the time being
+			for i := 0; i < 256; i++ {
+				WriteInt(127, result)
+			}
+		}
+	}
 }

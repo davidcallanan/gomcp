@@ -195,11 +195,6 @@ func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) 
 		X: 0, Y: 64, Z: 0, Yaw: 0, Pitch: 0,
 	}, client.state, client.output)
 
-	if client.state.Protocol < 0x0286 {
-		println("Returning")
-		return
-	}
-
 	var blocks [4096]uint32 // initialized to 0 (I hope that corresponds to stone)
 
 	for i := range blocks {
