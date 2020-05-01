@@ -136,13 +136,12 @@ func EmitChunkSectionData(blocks []uint32, result *bufio.Writer) {
 		var b uint64 = uint64(block) & ((1 << bitsPerBlock) - 1)
 		currLong |= b << start
 
-		if start + bitsPerBlock >= 63 {
+		if start + bitsPerBlock >= 64 {
 			WriteLong(int64(currLong), result)
 			currLong = 0
-			currLong |= b >> (63 - start)
+			currLong |= b >> (64 - start)
 			start += bitsPerBlock
-			start -= 63
-			println(start)
+			start -= 64
 		} else {
 			start += bitsPerBlock
 		}
