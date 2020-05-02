@@ -22,7 +22,7 @@ func PacketId_ChunkData(protocol uint) int {
 	// todo older versions
 }
 
-func WriteChunkData(ctx ClientContext, chunk ChunkData, result *bufio.Writer) {
+func WriteChunkData(chunk ChunkData, ctx ClientContext, result *bufio.Writer) {
 	sectionMask := int32(0)
 
 	for i, section := range chunk.Sections {

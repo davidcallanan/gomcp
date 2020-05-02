@@ -27,7 +27,7 @@ func PacketId_JoinGame(protocol uint) int {
 	return -1
 }
 
-func WriteJoinGame(ctx ClientContext, data JoinGame, stream *bufio.Writer) {
+func WriteJoinGame(data JoinGame, ctx ClientContext, stream *bufio.Writer) {
 	WriteInt(data.EntityId, stream)
 
 	var gamemode byte

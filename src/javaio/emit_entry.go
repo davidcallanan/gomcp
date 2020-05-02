@@ -7,12 +7,12 @@ import "bufio"
 
 // Clientbound
 
-func EmitClientboundPacketUncompressed(packet interface{}, state ClientState, output *bufio.Writer) {
-	if state.State == StatePreNetty {
+func EmitClientboundPacketUncompressed(packet interface{}, ctx ClientContext, output *bufio.Writer) {
+	if ctx.State == StatePreNetty {
 		Write_002E_StatusResponse(*packet.(*T_002E_StatusResponse), output)
 		output.Flush()
 		return
-	} else if state.State == StateVeryPreNetty {
+	} else if ctx.State == StateVeryPreNetty {
 		WriteVeryLegacyStatusResponse(*packet.(*VeryLegacyStatusResponse), output)
 		output.Flush()
 		return
@@ -24,7 +24,7 @@ func EmitClientboundPacketUncompressed(packet interface{}, state ClientState, ou
 	packetIdWriter := bufio.NewWriter(&packetIdBuf)
 	dataWriter := bufio.NewWriter(&dataBuf)
 
-	switch state.State {
+	switch ctx.State {
 	case StateHandshaking:
 		panic("Packet cannot be emitted in handshaking state")
 	case StateStatus:
@@ -49,26 +49,22 @@ func EmitClientboundPacketUncompressed(packet interface{}, state ClientState, ou
 	case StatePlay:
 		switch packet := packet.(type) {
 		case *KeepAlive:
-			packetId = int32(PacketId_KeepAlive(state.Protocol))
+			packetId = int32(PacketId_KeepAlive(ctx.Protocol))
 			WriteKeepAlive(*packet, dataWriter)
 		case *JoinGame:
-			packetId = int32(PacketId_JoinGame(state.Protocol))
-			WriteJoinGame(ClientContext {
-				Protocol: state.Protocol,
-			}, *packet, dataWriter)	
+			packetId = int32(PacketId_JoinGame(ctx.Protocol))
+			WriteJoinGame(*packet, ctx, dataWriter)	
 		case *CompassPosition:
-			packetId = int32(PacketId_CompassPosition(state.Protocol))
+			packetId = int32(PacketId_CompassPosition(ctx.Protocol))
 			WriteCompassPosition(*packet, dataWriter)
 		case *PlayerPositionAndLook:
-			packetId = int32(PacketId_PlayerPositionAndLook(state.Protocol))
+			packetId = int32(PacketId_PlayerPositionAndLook(ctx.Protocol))
 			WritePlayerPositionAndLook(*packet, dataWriter)
 		case *ChunkData:
-			packetId = int32(PacketId_ChunkData(state.Protocol))
-			WriteChunkData(ClientContext {
-				Protocol: state.Protocol,
-			}, *packet, dataWriter)
+			packetId = int32(PacketId_ChunkData(ctx.Protocol))
+			WriteChunkData(*packet, ctx, dataWriter)
 		case *PlayerInfoAdd:
-			packetId = int32(PacketId_PlayerInfo(state.Protocol))
+			packetId = int32(PacketId_PlayerInfo(ctx.Protocol))
 			WritePlayerInfoAdd(*packet, dataWriter)
 		default:
 			panic("Packet cannot be emitted in play state (likely because not implemented)")
@@ -97,6 +93,6 @@ func EmitClientboundPacketUncompressed(packet interface{}, state ClientState, ou
 	output.Flush()
 }
 
-func EmitClientboundPacketCompressed(packet interface{}, state ClientState, output *bufio.Writer) {
+func EmitClientboundPacketCompressed(packet interface{}, ctx ClientContext, output *bufio.Writer) {
 	panic("EmicClientboundPacketCompressed not implemented")
 }
