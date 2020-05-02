@@ -26,12 +26,11 @@ func PacketId_PlayerInfo(protocol uint) int {
 }
 
 func WritePlayerInfoAdd(data PlayerInfoAdd, stream *bufio.Writer) {
+	// WARNING: My instinctial conclusion is that the number of players on the tab list
+	// cannot exceed the number of players online? I haven't managed to get more than one player
+
 	WriteVarInt(0, stream) // action 0: add players
 	WriteVarInt(int32(len(data.Players)), stream) // potentially unsafe cast?
-
-	if len(data.Players) != 1 {
-		panic("More than one player not implemented")
-	}
 
 	for _, player := range data.Players {
 		WriteUuidBin(player.Uuid, stream)
