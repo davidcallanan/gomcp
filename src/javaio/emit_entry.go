@@ -9,7 +9,7 @@ import "bufio"
 
 func EmitClientboundPacketUncompressed(packet interface{}, ctx ClientContext, output *bufio.Writer) {
 	if ctx.State == StatePreNetty {
-		Write_002E_StatusResponse(*packet.(*T_002E_StatusResponse), output)
+		Write_002E_StatusResponse(*packet.(*Packet_002E_StatusResponse), output)
 		output.Flush()
 		return
 	} else if ctx.State == StateVeryPreNetty {
@@ -29,12 +29,12 @@ func EmitClientboundPacketUncompressed(packet interface{}, ctx ClientContext, ou
 		panic("Packet cannot be emitted in handshaking state")
 	case StateStatus:
 		switch packet := packet.(type) {
-		case *StatusResponse:
+		case *Packet_0051_StatusResponse:
 			packetId = 0x00
-			EmitStatusResponse(*packet, dataWriter)
-		case *Pong:
+			Write_0051_StatusResponse(*packet, dataWriter)
+		case *Packet_0051_Pong:
 			packetId = 0x01
-			EmitPong(*packet, dataWriter)
+			Write_0051_Pong(*packet, dataWriter)
 		default:
 			panic("Packet cannot be emitted in status state")
 		}

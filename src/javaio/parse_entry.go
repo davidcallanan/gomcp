@@ -67,7 +67,7 @@ func ParseServerboundPacketUncompressed(data *bufio.Reader, state State) (result
 		// Temporary hack-check
 		b, _ := data.ReadByte()
 		if b == 0xfe {
-			result = T_002E_StatusRequest {
+			result = Packet_002E_StatusRequest {
 			}
 		}
 		return
@@ -105,9 +105,9 @@ func ParseServerboundPacketUncompressed(data *bufio.Reader, state State) (result
 	case StateStatus:
 		switch packetId {
 		case 0:
-			result, err = ParseStatusRequest(data)
+			result, err = Read_0051_StatusRequest(data)
 		case 1:
-			result, err = ParsePing(data)
+			result, err = Read_0051_Ping(data)
 		default:
 			err = &UnsupportedPayloadError { fmt.Sprintf("Unrecognized packet id %d", packetId) }
 		}

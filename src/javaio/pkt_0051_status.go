@@ -4,10 +4,54 @@ import "bufio"
 import "encoding/json"
 import "encoding/base64"
 
-/**  Serverbound packet emission will not be available for the foreseeable future unless contributed by others.  **/
-/**  All clientbound packets are implemented.  **/
+// Types
 
-// Clientbound
+type Packet_0051_StatusRequest struct {
+}
+
+type Packet_0051_StatusResponse struct {
+	Protocol int32
+	Version string
+	Description string
+	FaviconPng []byte
+	MaxPlayers int
+	OnlinePlayers int
+	PlayerSample []Packet_0051_StatusResponse_Player
+}
+
+type Packet_0051_StatusResponse_Player struct {
+	Name string
+	Uuid string
+}
+
+type Packet_0051_Ping struct {
+	Payload int64
+}
+
+type Packet_0051_Pong struct {
+	Payload int64
+}
+
+// Read
+
+func Read_0051_StatusRequest(stream *bufio.Reader) (result Packet_0051_StatusRequest, err error) {
+	result = Packet_0051_StatusRequest{}
+	return
+}
+
+func Read_0051_Ping(stream *bufio.Reader) (result Packet_0051_Ping, err error) {
+	payload, err := ReadLong(stream)
+	if err != nil {
+		return
+	}
+
+	result = Packet_0051_Ping {
+		Payload: payload,
+	}
+	return
+}
+
+// Write
 
 type statusJson struct {
 	Description struct {
@@ -30,7 +74,7 @@ type statusJsonPlayer struct {
 	Uuid string `json:"id"`
 }
 
-func EmitStatusResponse(status StatusResponse, result *bufio.Writer) {
+func Write_0051_StatusResponse(status Packet_0051_StatusResponse, stream *bufio.Writer) {
 	// Generate JSON
 	jsonObj := statusJson {}
 	jsonObj.Description.Text = status.Description
@@ -55,9 +99,9 @@ func EmitStatusResponse(status StatusResponse, result *bufio.Writer) {
 	}
 
 	// Emit packet
-	WriteString(string(jsonBytes), result)
+	WriteString(string(jsonBytes), stream)
 }
 
-func EmitPong(pong Pong, result *bufio.Writer) {
-	WriteLong(pong.Payload, result)
+func Write_0051_Pong(pong Packet_0051_Pong, stream *bufio.Writer) {
+	WriteLong(pong.Payload, stream)
 }

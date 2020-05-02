@@ -142,9 +142,9 @@ func (server *Server) handleReceive(client *client) {
 		server.ProcessHandshake(client, packet)
 
 		// Status
-	case javaio.StatusRequest:
+	case javaio.Packet_0051_StatusRequest:
 		server.ProcessStatusRequest(client, packet)
-	case javaio.Ping:
+	case javaio.Packet_0051_Ping:
 		server.ProcessPing(client, packet)
 
 		// Login
@@ -152,7 +152,7 @@ func (server *Server) handleReceive(client *client) {
 		server.ProcessLoginStart(client, packet)
 
 		// Pre-Netty
-	case javaio.T_002E_StatusRequest:
+	case javaio.Packet_002E_StatusRequest:
 		server.ProcessLegacyStatusRequest(client, packet)
 
 		// Very Pre-Netty
@@ -174,7 +174,7 @@ func (server *Server) ProcessHandshake(client *client, handshake javaio.Handshak
 	client.ctx.State = handshake.NextState
 }
 
-func (server *Server) ProcessStatusRequest(client *client, _ javaio.StatusRequest) {
+func (server *Server) ProcessStatusRequest(client *client, _ javaio.Packet_0051_StatusRequest) {
 	if server.handleStatusRequestV3 == nil {
 		return
 	}
@@ -190,16 +190,16 @@ func (server *Server) ProcessStatusRequest(client *client, _ javaio.StatusReques
 		protocol = javaio.EncodePostNettyVersion(client.ctx.Protocol)
 	}
 
-	playerSample := make([]javaio.StatusResponsePlayer, len(res.PlayerSample), len(res.PlayerSample))
+	playerSample := make([]javaio.Packet_0051_StatusResponse_Player, len(res.PlayerSample), len(res.PlayerSample))
 
 	for i, text := range res.PlayerSample {
-		playerSample[i] = javaio.StatusResponsePlayer {
+		playerSample[i] = javaio.Packet_0051_StatusResponse_Player {
 			Name: text,
 			Uuid: "65bd239f-89f2-4cc7-ae8b-bb625525904e",
 		}
 	}
 
-	client.SendPacket(&javaio.StatusResponse {
+	client.SendPacket(&javaio.Packet_0051_StatusResponse {
 		Protocol: protocol,
 		Version: res.Version,
 		Description: res.Description,
@@ -209,7 +209,7 @@ func (server *Server) ProcessStatusRequest(client *client, _ javaio.StatusReques
 	})
 }
 
-func (server *Server) ProcessLegacyStatusRequest(client *client, _ javaio.T_002E_StatusRequest) {
+func (server *Server) ProcessLegacyStatusRequest(client *client, _ javaio.Packet_002E_StatusRequest) {
 	if server.handleStatusRequestV2 == nil {
 		return
 	}
@@ -225,7 +225,7 @@ func (server *Server) ProcessLegacyStatusRequest(client *client, _ javaio.T_002E
 		protocol = int(client.ctx.Protocol)
 	}
 
-	client.SendPacket(&javaio.T_002E_StatusResponse {
+	client.SendPacket(&javaio.Packet_002E_StatusResponse {
 		Protocol: protocol,
 		Version: res.Version,
 		Description: res.Description,
@@ -252,8 +252,8 @@ func (server *Server) ProcessVeryLegacyStatusRequest(client *client, _ javaio.Ve
 	})
 }
 
-func (server *Server) ProcessPing(client *client, ping javaio.Ping) {
-	client.SendPacket(&javaio.Pong {
+func (server *Server) ProcessPing(client *client, ping javaio.Packet_0051_Ping) {
+	client.SendPacket(&javaio.Packet_0051_Pong {
 		Payload: ping.Payload,
 	})
 }

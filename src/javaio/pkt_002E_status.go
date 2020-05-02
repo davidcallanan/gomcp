@@ -4,10 +4,10 @@ import "bufio"
 import "strconv"
 import "unicode/utf16"
 
-type T_002E_StatusRequest struct {
+type Packet_002E_StatusRequest struct {
 }
 
-type T_002E_StatusResponse struct {
+type Packet_002E_StatusResponse struct {
 	Protocol int
 	Version string
 	Description string
@@ -15,7 +15,7 @@ type T_002E_StatusResponse struct {
 	OnlinePlayers int
 }
 
-func Write_002E_StatusResponse(status T_002E_StatusResponse, stream *bufio.Writer) {
+func Write_002E_StatusResponse(status Packet_002E_StatusResponse, stream *bufio.Writer) {
 	packetId := byte(0xff)
 	protocol := utf16.Encode([]rune(strconv.Itoa(status.Protocol)))
 	version := utf16.Encode([]rune(status.Version))
