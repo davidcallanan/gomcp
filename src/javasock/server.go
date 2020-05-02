@@ -295,8 +295,8 @@ func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) 
 		}
 	}
 
-	for x := -10; x <= 10; x++ {
-		for z := -10; z <= 10; z++ {
+	for x := -3; x <= 3; x++ {
+		for z := -3; z <= 3; z++ {
 			javaio.EmitClientboundPacketUncompressed(&javaio.ChunkData {
 				X: int32(x), Z: int32(z), IsNew: true,
 				Sections: [][]uint32 { nil, blocksA[:], blocksB[:], blocksC[:] },
@@ -307,6 +307,14 @@ func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) 
 	if server.handlePlayerJoin != nil {
 		server.handlePlayerJoin(playerUuid.ID(), data.ClientsideUsername)
 	}
+
+	javaio.EmitClientboundPacketUncompressed(&javaio.PlayerInfoAdd {
+		Players: []javaio.PlayerInfo {
+			{ Uuid: javaio.Uuid{ 1234, 2345}, Username: "JohnDoe", Ping: 0 },
+			{ Uuid: javaio.Uuid{ 4567, 2347}, Username: "CatsEyebrows", Ping: -5 },
+			{ Uuid: javaio.Uuid{23425, 2349}, Username: "ElepantNostrel23", Ping: 500 },
+		},
+	}, client.state, client.output)
 }
 
 func (server *Server) SpawnPlayer() {

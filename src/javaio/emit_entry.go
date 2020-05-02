@@ -67,6 +67,9 @@ func EmitClientboundPacketUncompressed(packet interface{}, state ClientState, ou
 			WriteChunkData(ClientContext {
 				Protocol: state.Protocol,
 			}, *packet, dataWriter)
+		case *PlayerInfoAdd:
+			packetId = int32(PacketId_PlayerInfo(state.Protocol))
+			WritePlayerInfoAdd(*packet, dataWriter)
 		default:
 			panic("Packet cannot be emitted in play state (likely because not implemented)")
 		}
