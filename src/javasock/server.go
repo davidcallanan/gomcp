@@ -168,7 +168,7 @@ func (server *Server) ProcessProtocolDetermined(client *client, data javaio.Prot
 }
 
 func (server *Server) ProcessHandshake(client *client, handshake javaio.Handshake) {
-	client.ctx.Protocol = uint(handshake.Protocol) + 81
+	client.ctx.Protocol = javaio.DecodePostNettyVersion(handshake.Protocol)
 	client.ctx.State = handshake.NextState
 }
 
@@ -181,7 +181,7 @@ func (server *Server) ProcessStatusRequest(client *client, _ javaio.StatusReques
 
 	protocol := int32(0)
 	if (res.IsClientSupported) {
-		protocol = int32(client.ctx.Protocol) - 81
+		protocol = javaio.EncodePostNettyVersion(client.ctx.Protocol)
 	}
 
 	playerSample := make([]javaio.StatusResponsePlayer, len(res.PlayerSample), len(res.PlayerSample))
