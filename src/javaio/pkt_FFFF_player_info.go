@@ -26,9 +26,9 @@ func PacketId_PlayerInfo(protocol uint) int {
 }
 
 func WritePlayerInfoAdd(data PlayerInfoAdd, stream *bufio.Writer) {
-	// WARNING: My instinctial conclusion is that the number of players on the tab list
-	// cannot exceed the number of players online? I haven't managed to get more than one player
-
+	// WARNING: Do not use negative numbers for ping!
+	// VarInt does not work correctly with negative numbers yet
+	
 	WriteVarInt(0, stream) // action 0: add players
 	WriteVarInt(int32(len(data.Players)), stream) // potentially unsafe cast?
 
