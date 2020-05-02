@@ -1,13 +1,16 @@
 package javaio
 
 import "bufio"
+import "github.com/google/uuid"
 
-type Uuid struct {
-	Msh uint64 // most significant half
-	Lsh uint64 // least significant half
-}
+func WriteUuidBin(uuid uuid.UUID, stream *bufio.Writer) {
+	data, err := uuid.MarshalBinary()
 
-func WriteUuid(uuid Uuid, stream *bufio.Writer) {
-	WriteULong(uuid.Msh, stream)
-	WriteULong(uuid.Lsh, stream)
+	if err != nil {
+		panic(err)
+	}
+	
+	for i := range data {
+		stream.WriteByte(data[len(data) - 1 - i])	
+	}
 }

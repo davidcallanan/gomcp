@@ -1,13 +1,14 @@
 package javaio
 
 import "bufio"
+import "github.com/google/uuid"
 
 type PlayerInfoAdd struct {
 	Players []PlayerInfo
 }
 
 type PlayerInfo struct {
-	Uuid Uuid
+	Uuid uuid.UUID
 	Username string
 	Ping int32
 }
@@ -29,7 +30,7 @@ func WritePlayerInfoAdd(data PlayerInfoAdd, stream *bufio.Writer) {
 	WriteVarInt(int32(len(data.Players)), stream) // potentially unsafe cast?
 
 	for _, player := range data.Players {
-		WriteUuid(player.Uuid, stream)
+		WriteUuidBin(player.Uuid, stream)
 		WriteString(player.Username, stream)
 		WriteVarInt(0, stream) // property count; no properties for now
 		WriteVarInt(0, stream) // gamemode survival; not worried about this for now

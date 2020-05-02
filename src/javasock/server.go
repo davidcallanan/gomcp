@@ -310,9 +310,9 @@ func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) 
 
 	javaio.EmitClientboundPacketUncompressed(&javaio.PlayerInfoAdd {
 		Players: []javaio.PlayerInfo {
-			{ Uuid: javaio.Uuid{ 1234, 2345}, Username: "JohnDoe", Ping: 0 },
-			{ Uuid: javaio.Uuid{ 4567, 2347}, Username: "CatsEyebrows", Ping: -5 },
-			{ Uuid: javaio.Uuid{23425, 2349}, Username: "ElepantNostrel23", Ping: 500 },
+			{ Uuid: uuid.New(), Username: "JohnDoe", Ping: 0 },
+			{ Uuid: uuid.New(), Username: "CatsEyebrows", Ping: -5 },
+			{ Uuid: uuid.New(), Username: "ElepantNostrel23", Ping: 500 },
 		},
 	}, client.state, client.output)
 }
