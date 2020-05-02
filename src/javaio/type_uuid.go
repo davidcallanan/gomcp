@@ -10,7 +10,10 @@ func WriteUuidBin(uuid uuid.UUID, stream *bufio.Writer) {
 		panic(err)
 	}
 	
-	for i := range data {
-		stream.WriteByte(data[len(data) - 1 - i])	
-	}
+	// TODO: not sure which order to use here
+	stream.Write(data)
+
+	// for i := range data {
+	// 	stream.WriteByte(data[len(data) - 1 - i])	
+	// }
 }

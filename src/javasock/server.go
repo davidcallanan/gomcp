@@ -311,7 +311,17 @@ func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) 
 	javaio.EmitClientboundPacketUncompressed(&javaio.PlayerInfoAdd {
 		Players: []javaio.PlayerInfo {
 			{ Uuid: uuid.New(), Username: "JohnDoe", Ping: 0 },
+		},
+	}, client.state, client.output)
+
+	javaio.EmitClientboundPacketUncompressed(&javaio.PlayerInfoAdd {
+		Players: []javaio.PlayerInfo {
 			{ Uuid: uuid.New(), Username: "CatsEyebrows", Ping: -5 },
+		},
+	}, client.state, client.output)
+
+	javaio.EmitClientboundPacketUncompressed(&javaio.PlayerInfoAdd {
+		Players: []javaio.PlayerInfo {
 			{ Uuid: uuid.New(), Username: "ElepantNostrel23", Ping: 500 },
 		},
 	}, client.state, client.output)

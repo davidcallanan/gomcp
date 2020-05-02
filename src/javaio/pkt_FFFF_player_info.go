@@ -29,6 +29,10 @@ func WritePlayerInfoAdd(data PlayerInfoAdd, stream *bufio.Writer) {
 	WriteVarInt(0, stream) // action 0: add players
 	WriteVarInt(int32(len(data.Players)), stream) // potentially unsafe cast?
 
+	if len(data.Players) != 1 {
+		panic("More than one player not implemented")
+	}
+
 	for _, player := range data.Players {
 		WriteUuidBin(player.Uuid, stream)
 		WriteString(player.Username, stream)

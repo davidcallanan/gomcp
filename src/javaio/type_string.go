@@ -34,7 +34,7 @@ func ReadString(stream *bufio.Reader, maxRuneCount int) (result string, err erro
 	return
 }
 
-func WriteString(value string, stream *bufio.Writer) {
+func WriteString(value string, stream *bufio.Writer) { // TODO: string length limit
 	// TODO: int32 cast potentially unsafe?
 	WriteVarInt(int32(len(value)), stream)
 	stream.WriteString(value)
