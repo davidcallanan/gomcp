@@ -102,11 +102,15 @@ func (server *Server) AddConnection(input io.Reader, output io.Writer, closeCall
 				continue
 			}
 
-			javaio.EmitClientboundPacketUncompressed(&javaio.KeepAlive {
+			client.SendPacket(&javaio.KeepAlive {
 				Payload: now.Unix(),
-			}, client.ctx, client.output)
+			})
 		}
 	}()
+}
+
+func (client *client) SendPacket(packet interface{}) {
+	javaio.EmitClientboundPacketUncompressed(packet, client.ctx, client.output)
 }
 
 func (server *Server) handleReceive(client *client) {
@@ -189,14 +193,14 @@ func (server *Server) ProcessStatusRequest(client *client, _ javaio.StatusReques
 		}
 	}
 
-	javaio.EmitClientboundPacketUncompressed(&javaio.StatusResponse {
+	client.SendPacket(&javaio.StatusResponse {
 		Protocol: protocol,
 		Version: res.Version,
 		Description: res.Description,
 		MaxPlayers: res.MaxPlayers,
 		OnlinePlayers: res.OnlinePlayers,
 		PlayerSample: playerSample,
-	}, client.ctx, client.output)
+	})
 }
 
 func (server *Server) ProcessLegacyStatusRequest(client *client, _ javaio.T_002E_StatusRequest) {
@@ -211,13 +215,13 @@ func (server *Server) ProcessLegacyStatusRequest(client *client, _ javaio.T_002E
 		protocol = int(client.ctx.Protocol)
 	}
 
-	javaio.EmitClientboundPacketUncompressed(&javaio.T_002E_StatusResponse {
+	client.SendPacket(&javaio.T_002E_StatusResponse {
 		Protocol: protocol,
 		Version: res.Version,
 		Description: res.Description,
 		MaxPlayers: res.MaxPlayers,
 		OnlinePlayers: res.OnlinePlayers,
-	}, client.ctx, client.output)
+	})
 }
 
 func (server *Server) ProcessVeryLegacyStatusRequest(client *client, _ javaio.VeryLegacyStatusRequest) {
@@ -227,31 +231,31 @@ func (server *Server) ProcessVeryLegacyStatusRequest(client *client, _ javaio.Ve
 		return
 	}
 
-	javaio.EmitClientboundPacketUncompressed(&javaio.VeryLegacyStatusResponse {
+	client.SendPacket(&javaio.VeryLegacyStatusResponse {
 		Description: res.Description,
 		MaxPlayers: res.MaxPlayers,
 		OnlinePlayers: res.OnlinePlayers,
-	}, client.ctx, client.output)
+	})
 }
 
 func (server *Server) ProcessPing(client *client, ping javaio.Ping) {
-	javaio.EmitClientboundPacketUncompressed(&javaio.Pong {
+	client.SendPacket(&javaio.Pong {
 		Payload: ping.Payload,
-	}, client.ctx, client.output)
+	})
 }
 
 func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) {
 	println(data.ClientsideUsername)
 	playerUuid := uuid.New()
 
-	javaio.EmitClientboundPacketUncompressed(&javaio.LoginSuccess {
+	client.SendPacket(&javaio.LoginSuccess {
 		Uuid: playerUuid,
 		Username: data.ClientsideUsername,
-	}, client.ctx, client.output)
+	})
 
 	client.ctx.State = javaio.StatePlay
 
-	javaio.EmitClientboundPacketUncompressed(&javaio.JoinGame {
+	client.SendPacket(&javaio.JoinGame {
 		EntityId: 0,
 		Gamemode: javaio.GamemodeCreative,
 		Hardcore: false,
@@ -259,15 +263,15 @@ func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) 
 		ViewDistance: 1,
 		ReducedDebugInfo: false,
 		EnableRespawnScreen: false,
-	}, client.ctx, client.output)
+	})
 
-	javaio.EmitClientboundPacketUncompressed(&javaio.CompassPosition {
+	client.SendPacket(&javaio.CompassPosition {
 		Location: javaio.BlockPosition { X: 0, Y: 64, Z: 0 },
-	}, client.ctx, client.output)
+	})
 
-	javaio.EmitClientboundPacketUncompressed(&javaio.PlayerPositionAndLook {
+	client.SendPacket(&javaio.PlayerPositionAndLook {
 		X: 0, Y: 64, Z: 0, Yaw: 0, Pitch: 0,
-	}, client.ctx, client.output)
+	})
 
 	var blocksA [4096]uint32
 	var blocksB [4096]uint32
@@ -295,10 +299,10 @@ func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) 
 
 	for x := -3; x <= 3; x++ {
 		for z := -3; z <= 3; z++ {
-			javaio.EmitClientboundPacketUncompressed(&javaio.ChunkData {
+			client.SendPacket(&javaio.ChunkData {
 				X: int32(x), Z: int32(z), IsNew: true,
 				Sections: [][]uint32 { nil, blocksA[:], blocksB[:], blocksC[:] },
-			}, client.ctx, client.output)
+			})
 		}
 	}
 
@@ -306,13 +310,13 @@ func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) 
 		server.handlePlayerJoin(playerUuid.ID(), data.ClientsideUsername)
 	}
 
-	javaio.EmitClientboundPacketUncompressed(&javaio.PlayerInfoAdd {
+	client.SendPacket(&javaio.PlayerInfoAdd {
 		Players: []javaio.PlayerInfo {
 			{ Uuid: uuid.New(), Username: "JohnDoe", Ping: 0 },
 			{ Uuid: uuid.New(), Username: "CatsEyebrows", Ping: 5 },
 			{ Uuid: uuid.New(), Username: "ElepantNostrel23", Ping: 500 },
 		},
-	}, client.ctx, client.output)
+	})
 }
 
 func (server *Server) SpawnPlayer() {
