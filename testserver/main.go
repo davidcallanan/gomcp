@@ -9,7 +9,6 @@ func main() {
 	const onlinePlayers = 2
 	const version = "1.14-1.15"
 
-	var clients []uint32
 	server := javasock.NewServer()
 	listener, err := net.Listen("tcp4", "localhost:25565")
 	if err != nil {
@@ -17,7 +16,7 @@ func main() {
 	}
 	defer listener.Close()
 
-	server.OnStatusRequestV1(func() javasock.StatusResponseV1 {
+	server.OnStatusRequestV1(func(_id int) javasock.StatusResponseV1 {
 		return javasock.StatusResponseV1 {
 			Description: "Hello, World!",
 			MaxPlayers: maxPlayers,
@@ -25,7 +24,7 @@ func main() {
 		}
 	})
 
-	server.OnStatusRequestV2(func() javasock.StatusResponseV2 {
+	server.OnStatusRequestV2(func(_id int) javasock.StatusResponseV2 {
 		return javasock.StatusResponseV2 {
 			IsClientSupported: false,
 			Version: version,
@@ -35,7 +34,7 @@ func main() {
 		}
 	})
 
-	server.OnStatusRequestV3(func() javasock.StatusResponseV3 {
+	server.OnStatusRequestV3(func(_id int) javasock.StatusResponseV3 {
 		return javasock.StatusResponseV3 {
 			IsClientSupported: true,
 			Version: version,
@@ -51,11 +50,13 @@ func main() {
 		}
 	})
 
-	server.OnPlayerJoin(func(uuid uint32, _ string) {
-		clients = append(clients, uuid)
+	server.OnPlayerJoin(func(id int) {
+		fmt.Printf("Player with id %d has joined the game.\n", id)
 	})
 
 	fmt.Println("Test server is now listening...")
+
+	nextId := 0
 
 	for {
 		connection, err := listener.Accept()
@@ -63,9 +64,11 @@ func main() {
 			panic(err)
 		}
 
+		id := nextId
+		nextId++
 		fmt.Println("Accepted a connection!")
 
-		server.AddConnection(connection, connection, func() {
+		server.AddConnection(id, connection, connection, func() {
 			connection.Close()
 		})
 	}

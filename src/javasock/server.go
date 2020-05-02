@@ -7,6 +7,7 @@ import "github.com/davidcallanan/gomcp/javaio"
 import "github.com/google/uuid"
 
 type client struct {
+	id int
 	ctx javaio.ClientContext
 	input *bufio.Reader
 	output *bufio.Writer
@@ -20,10 +21,10 @@ func (client *client) close() {
 }
 
 type Server struct {
-	handleStatusRequestV1 func() StatusResponseV1
-	handleStatusRequestV2 func() StatusResponseV2
-	handleStatusRequestV3 func() StatusResponseV3
-	handlePlayerJoin func(uuid uint32, clientsideUsername string)
+	handleStatusRequestV1 func(id int) StatusResponseV1
+	handleStatusRequestV2 func(id int) StatusResponseV2
+	handleStatusRequestV3 func(id int) StatusResponseV3
+	handlePlayerJoin func(id int)
 }
 
 func NewServer() Server {
@@ -61,24 +62,25 @@ type StatusResponseV3 struct {
 	PlayerSample []string
 }
 
-func (server *Server) OnStatusRequestV1(callback func() StatusResponseV1) {
+func (server *Server) OnStatusRequestV1(callback func(id int) StatusResponseV1) {
 	server.handleStatusRequestV1 = callback
 }
 
-func (server *Server) OnStatusRequestV2(callback func() StatusResponseV2) {
+func (server *Server) OnStatusRequestV2(callback func(id int) StatusResponseV2) {
 	server.handleStatusRequestV2 = callback
 }
 
-func (server *Server) OnStatusRequestV3(callback func() StatusResponseV3) {
+func (server *Server) OnStatusRequestV3(callback func(id int) StatusResponseV3) {
 	server.handleStatusRequestV3 = callback
 }
 
-func (server *Server) OnPlayerJoin(callback func(uuid uint32, clientsideUsername string)) {
+func (server *Server) OnPlayerJoin(callback func(id int)) {
 	server.handlePlayerJoin = callback
 }
 
-func (server *Server) AddConnection(input io.Reader, output io.Writer, closeCallback func()) {
+func (server *Server) AddConnection(id int, input io.Reader, output io.Writer, closeCallback func()) {
 	client := &client {
+		id: id,
 		ctx: javaio.InitialClientContext,
 		input: bufio.NewReader(input),
 		output: bufio.NewWriter(output),
@@ -173,7 +175,11 @@ func (server *Server) ProcessHandshake(client *client, handshake javaio.Handshak
 }
 
 func (server *Server) ProcessStatusRequest(client *client, _ javaio.StatusRequest) {
-	res := server.handleStatusRequestV3()
+	if server.handleStatusRequestV3 == nil {
+		return
+	}
+
+	res := server.handleStatusRequestV3(client.id)
 
 	if (res.PreventResponse) {
 		return
@@ -204,7 +210,11 @@ func (server *Server) ProcessStatusRequest(client *client, _ javaio.StatusReques
 }
 
 func (server *Server) ProcessLegacyStatusRequest(client *client, _ javaio.T_002E_StatusRequest) {
-	res := server.handleStatusRequestV2()
+	if server.handleStatusRequestV2 == nil {
+		return
+	}
+
+	res := server.handleStatusRequestV2(client.id)
 
 	if (res.PreventResponse) {
 		return
@@ -225,7 +235,11 @@ func (server *Server) ProcessLegacyStatusRequest(client *client, _ javaio.T_002E
 }
 
 func (server *Server) ProcessVeryLegacyStatusRequest(client *client, _ javaio.VeryLegacyStatusRequest) {
-	res := server.handleStatusRequestV1()
+	if server.handleStatusRequestV1 == nil {
+		return
+	}
+	
+	res := server.handleStatusRequestV1(client.id)
 
 	if (res.PreventResponse) {
 		return
@@ -307,7 +321,7 @@ func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) 
 	}
 
 	if server.handlePlayerJoin != nil {
-		server.handlePlayerJoin(playerUuid.ID(), data.ClientsideUsername)
+		server.handlePlayerJoin(client.id)
 	}
 
 	client.SendPacket(&javaio.PlayerInfoAdd {
