@@ -20,12 +20,57 @@ func (client *client) close() {
 }
 
 type Server struct {
+	handleStatusRequestV1 func() StatusResponseV1
+	handleStatusRequestV2 func() StatusResponseV2
+	handleStatusRequestV3 func() StatusResponseV3
 	handlePlayerJoin func(uuid uint32, clientsideUsername string)
 }
 
 func NewServer() Server {
 	return Server {
 	}
+}
+
+type StatusResponseV1 struct {
+	// Color-coding is not supported.
+	// Description is treated as plain-text.
+	// Section character must not be used, otherwise there will be undefined behaviour.
+	PreventResponse bool
+	Description string
+	MaxPlayers int
+	OnlinePlayers int
+}
+
+type StatusResponseV2 struct {
+	PreventResponse bool
+	IsClientSupported bool
+	Version string
+	Description string
+	MaxPlayers int
+	OnlinePlayers int
+}
+
+type StatusResponseV3 struct {
+	PreventResponse bool
+	IsClientSupported bool
+	Version string
+	Description string
+	FaviconPng []byte
+	MaxPlayers int
+	OnlinePlayers int
+	PlayerSample []string
+}
+
+func (server *Server) OnStatusRequestV1(callback func() StatusResponseV1) {
+	server.handleStatusRequestV1 = callback
+}
+
+func (server *Server) OnStatusRequestV2(callback func() StatusResponseV2) {
+	server.handleStatusRequestV2 = callback
+}
+
+func (server *Server) OnStatusRequestV3(callback func() StatusResponseV3) {
+	server.handleStatusRequestV3 = callback
 }
 
 func (server *Server) OnPlayerJoin(callback func(uuid uint32, clientsideUsername string)) {
@@ -126,36 +171,68 @@ func (server *Server) ProcessHandshake(client *client, handshake javaio.Handshak
 }
 
 func (server *Server) ProcessStatusRequest(client *client, _ javaio.StatusRequest) {
+	res := server.handleStatusRequestV3()
+
+	if (res.PreventResponse) {
+		return
+	}
+
+	protocol := int32(0)
+	if (res.IsClientSupported) {
+		protocol = int32(client.state.Protocol) - 81
+	}
+
+	playerSample := make([]javaio.StatusResponsePlayer, len(res.PlayerSample), len(res.PlayerSample))
+
+	for i, text := range res.PlayerSample {
+		playerSample[i] = javaio.StatusResponsePlayer {
+			Name: text,
+			Uuid: "65bd239f-89f2-4cc7-ae8b-bb625525904e",
+		}
+	}
+
 	javaio.EmitClientboundPacketUncompressed(&javaio.StatusResponse {
-		Protocol: 578,
-		Version: "Outdated Minecraft",
-		Description: "§e§lHello, World!\n§rWelcome to this §kk§repic§kk§r server",
-		MaxPlayers: 20,
-		OnlinePlayers: 2,
-		PlayerSample: []javaio.StatusResponsePlayer {
-			{ Name: "§aThis is", Uuid: "65bd239f-89f2-4cc7-ae8b-bb625525904e" },
-			{ Name: "§cthe most", Uuid: "65bd239f-89f2-4cc7-ae8b-bb625525904e" },
-			{ Name: "§8amazing thing", Uuid: "65bd239f-89f2-4cc7-ae8b-bb625525904e" },
-			{ Name: "§9§lever!!!", Uuid: "65bd239f-89f2-4cc7-ae8b-bb625525904e" },
-		},
+		Protocol: protocol,
+		Version: res.Version,
+		Description: res.Description,
+		MaxPlayers: res.MaxPlayers,
+		OnlinePlayers: res.OnlinePlayers,
+		PlayerSample: playerSample,
 	}, client.state, client.output)
 }
 
 func (server *Server) ProcessLegacyStatusRequest(client *client, _ javaio.T_002E_StatusRequest) {
+	res := server.handleStatusRequestV2()
+
+	if (res.PreventResponse) {
+		return
+	}
+
+	protocol := 0
+	if (res.IsClientSupported) {
+		protocol = int(client.state.Protocol)
+	}
+
 	javaio.EmitClientboundPacketUncompressed(&javaio.T_002E_StatusResponse {
-		Protocol: 578,
-		Version: "Outdated Minecraft",
-		Description: "§e§lHello, World!  §rThis MOTD works for        legacy servers too!",
-		MaxPlayers: 21,
-		OnlinePlayers: 3,
+		Protocol: protocol,
+		Version: res.Version,
+		Description: res.Description,
+		MaxPlayers: res.MaxPlayers,
+		OnlinePlayers: res.OnlinePlayers,
 	}, client.state, client.output)
 }
 
 func (server *Server) ProcessVeryLegacyStatusRequest(client *client, _ javaio.VeryLegacyStatusRequest) {
+	res := server.handleStatusRequestV1()
+
+	if (res.PreventResponse) {
+		return
+	}
+
 	javaio.EmitClientboundPacketUncompressed(&javaio.VeryLegacyStatusResponse {
-		Description: "Hello Legacy Client!",
-		MaxPlayers: 22,
-		OnlinePlayers: 4,
+		Description: res.Description,
+		MaxPlayers: res.MaxPlayers,
+		OnlinePlayers: res.OnlinePlayers,
 	}, client.state, client.output)
 }
 
