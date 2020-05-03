@@ -1,6 +1,7 @@
 package javaserver
 
 import "io"
+import "fmt"
 import "math"
 import "time"
 import "bufio"
@@ -117,7 +118,7 @@ func (conn *Connection) send(packet interface{}) {
 }
 
 func (conn *Connection) handleReceive() {
-	packet, err := javaio.ParseServerboundPacketUncompressed(conn.inputStream, conn.ctx.State)
+	packet, err := javaio.ParseServerboundPacketUncompressed(conn.inputStream, conn.ctx, conn.ctx.State)
 
 	if err != nil {
 		switch err.(type) {
@@ -151,6 +152,10 @@ func (conn *Connection) handleReceive() {
 		// Login
 	case javaio.LoginStart:
 		conn.processLoginStart(packet)
+
+		// Play
+	case javaio.Packet_PlayerPositionAndLookServerbound:
+		conn.processMove(packet)
 
 		// Pre-Netty
 	case javaio.Packet_002E_StatusRequest:
@@ -335,6 +340,10 @@ func (conn *Connection) processLoginStart(data javaio.LoginStart) {
 	if conn.eventHandlers.OnPlayerJoin != nil {
 		conn.eventHandlers.OnPlayerJoin()
 	}
+}
+
+func (conn *Connection) processMove(data javaio.Packet_PlayerPositionAndLookServerbound) {
+	fmt.Printf("%v\n", data)
 }
 
 type PlayerToSpawn struct {

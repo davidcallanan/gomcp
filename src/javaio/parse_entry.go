@@ -7,7 +7,7 @@ import "bufio"
 
 // Serverbound
 
-func ParseServerboundPacketUncompressed(data *bufio.Reader, state State) (result interface{}, err error) {
+func ParseServerboundPacketUncompressed(data *bufio.Reader, ctx ClientContext, state State) (result interface{}, err error) {
 	if state == StateDeterminingProtocol {
 		// This pre-netty detection is pretty good.
 		// It does however require that there are at least 2 bytes in the
@@ -119,7 +119,12 @@ func ParseServerboundPacketUncompressed(data *bufio.Reader, state State) (result
 			err = UnsupportedPayloadError { fmt.Sprintf("Unrecognized packet id %d", packetId) }
 		}
 	case StatePlay:
-		// panic("Not implemented")
+		switch packetId {
+		case int32(PacketId_PlayerPositionAndLookServerbound(ctx.Protocol)):
+			result, err = Read_PlayerPositionAndLookServerbound(data)
+		default:
+			err = UnsupportedPayloadError { fmt.Sprintf("Unrecognized packet id %d", packetId) }
+		}
 	default:
 		panic("State does not match one of non-invalid predefined enum values")
 	}
