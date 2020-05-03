@@ -8,6 +8,7 @@ import "github.com/google/uuid"
 type Player struct {
 	conn *javaserver.Connection
 	uuid uuid.UUID
+	username string
 	x float64
 	y float64
 	z float64
@@ -16,7 +17,7 @@ type Player struct {
 func main() {
 	const maxPlayers = 20
 	const version = "1.14-1.15"
-	players := make([]Player, 0, maxPlayers)
+	players := make([]*Player, 0, maxPlayers)
 
 	listener, err := net.Listen("tcp4", "localhost:25565")
 	if err != nil {
@@ -33,7 +34,7 @@ func main() {
 		}
 
 		fmt.Println("Accepted a connection!")
-		var player Player
+		player := &Player{}
 
 		player.conn = javaserver.NewConnection(connection, func() {
 			connection.Close()
@@ -84,6 +85,7 @@ func main() {
 				
 				players = append(players, player)
 				player.uuid = uuid.New()
+				player.username = data.ClientsideUsername
 				return javaserver.PlayerJoinResponse {
 					Uuid: player.uuid,
 				}
@@ -92,21 +94,47 @@ func main() {
 			OnPlayerJoin: func() {
 				fmt.Println("Player of whom I forget their username has joined the game.")
 
-				player.conn.AddPlayerInfo([]javaserver.PlayerInfoToAdd {
-					{ Uuid: player.uuid, Username: "JohnDoe", Ping: 0 },
-					{ Uuid: uuid.New(), Username: "CatsEyebrows", Ping: 5 },
-					{ Uuid: uuid.New(), Username: "ElepantNostrel23", Ping: 500 },
-				})
+				// player.conn.AddPlayerInfo([]javaserver.PlayerInfoToAdd {
+				// 	{ Uuid: player.uuid, Username: "JohnDoe", Ping: 0 },
+				// 	{ Uuid: uuid.New(), Username: "CatsEyebrows", Ping: 5 },
+				// 	{ Uuid: uuid.New(), Username: "ElepantNostrel23", Ping: 500 },
+				// })
 
-				player.conn.SpawnPlayer(javaserver.PlayerToSpawn {
-					EntityId: 123,
-					Uuid: player.uuid,
-					X: 0,
-					Y: 70,
-					Z: 0,
-					Yaw: 0,
-					Pitch: 0,
-				})
+				for _, p := range players {
+					// Add self to tab list for other players
+					p.conn.AddPlayerInfo([]javaserver.PlayerInfoToAdd {
+						{ Uuid: player.uuid, Username: player.username, Ping: 0 },
+					})
+					
+					// Add other players to self tab list
+					player.conn.AddPlayerInfo([]javaserver.PlayerInfoToAdd {
+						{ Uuid: p.uuid, Username: player.username, Ping: 0 },
+					})
+
+					if p.uuid != player.uuid {
+						// Spawn self for already connected players
+						p.conn.SpawnPlayer(javaserver.PlayerToSpawn {
+							EntityId: 123,
+							Uuid: player.uuid,
+							X: 0,
+							Y: 64,
+							Z: 0,
+							Yaw: 0,
+							Pitch: 0,
+						})	
+
+						// Spawn already connected players for self
+						player.conn.SpawnPlayer(javaserver.PlayerToSpawn {
+							EntityId: 123,
+							Uuid: p.uuid,
+							X: 0,
+							Y: 64,
+							Z: 0,
+							Yaw: 0,
+							Pitch: 0,
+						})
+					}
+				}
 			},
 		})
 	}
