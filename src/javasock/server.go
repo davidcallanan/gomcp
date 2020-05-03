@@ -1,6 +1,7 @@
 package javasock
 
 import "io"
+import "math"
 import "time"
 import "bufio"
 import "github.com/davidcallanan/gomcp/javaio"
@@ -21,6 +22,7 @@ func (client *client) close() {
 }
 
 type Server struct {
+	clients map[int]*client
 	handleStatusRequestV1 func(id int) StatusResponseV1
 	handleStatusRequestV2 func(id int) StatusResponseV2
 	handleStatusRequestV3 func(id int) StatusResponseV3
@@ -30,6 +32,7 @@ type Server struct {
 
 func NewServer() Server {
 	return Server {
+		clients: make(map[int]*client),
 	}
 }
 
@@ -100,6 +103,8 @@ func (server *Server) AddConnection(id int, input io.Reader, output io.Writer, c
 		output: bufio.NewWriter(output),
 		closeCallback: closeCallback,
 	}
+
+	server.clients[id] = client
 
 	go func() {
 		for !client.isClosed {
@@ -354,6 +359,24 @@ func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) 
 	})
 }
 
-func (server *Server) SpawnPlayer() {
-	
+type PlayerToSpawn struct {
+	EntityId int32
+	Uuid uuid.UUID
+	X float64
+	Y float64
+	Z float64
+	Yaw float64
+	Pitch float64
+}
+
+func (server *Server) SpawnPlayer(clientId int, player PlayerToSpawn) {
+	server.clients[clientId].SendPacket(javaio.Packet_SpawnPlayer {
+		EntityId: player.EntityId,
+		Uuid: player.Uuid,
+		X: player.X,
+		Y: player.Y,
+		Z: player.Z,
+		Yaw: uint8(math.Round(player.Yaw / (math.Pi * 2) * 255)),
+		Pitch: uint8(math.Round(player.Pitch / (math.Pi * 2) * 255)),
+	})
 }

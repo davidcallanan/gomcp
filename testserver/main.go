@@ -60,6 +60,15 @@ func main() {
 
 	server.OnPlayerJoin(func(id int) {
 		fmt.Printf("Player with id %d has joined the game.\n", id)
+		server.SpawnPlayer(id, javasock.PlayerToSpawn {
+			EntityId: 123,
+			Uuid: uuid.New(),
+			X: 0,
+			Y: 70,
+			Z: 0,
+			Yaw: 0,
+			Pitch: 0,
+		})
 	})
 
 	fmt.Println("Test server is now listening...")

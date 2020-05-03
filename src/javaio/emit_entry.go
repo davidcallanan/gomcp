@@ -66,6 +66,9 @@ func EmitClientboundPacketUncompressed(packet interface{}, ctx ClientContext, ou
 		case PlayerInfoAdd:
 			packetId = int32(PacketId_PlayerInfo(ctx.Protocol))
 			WritePlayerInfoAdd(packet, dataWriter)
+		case Packet_SpawnPlayer:
+			packetId = int32(PacketId_SpawnPlayer(ctx.Protocol))
+			Write_SpawnPlayer(packet, dataWriter)
 		default:
 			panic("Packet cannot be emitted in play state (likely because not implemented)")
 		}
