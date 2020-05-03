@@ -3,6 +3,7 @@ package main
 import "fmt"
 import "net"
 import "github.com/davidcallanan/gomcp/javasock"
+import "github.com/google/uuid"
 
 func main() {
 	const maxPlayers = 20
@@ -47,6 +48,13 @@ func main() {
 				"§8amazing thing",
 				"§9§lever!!!",
 			},
+		}
+	})
+
+	server.OnPlayerJoinRequest(func(data javasock.PlayerJoinRequest) javasock.PlayerJoinResponse {
+		fmt.Printf("Player %s has requested to join the game.\n", data.ClientsideUsername)
+		return javasock.PlayerJoinResponse {
+			Uuid: uuid.New(),
 		}
 	})
 

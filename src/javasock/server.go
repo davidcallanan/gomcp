@@ -24,6 +24,7 @@ type Server struct {
 	handleStatusRequestV1 func(id int) StatusResponseV1
 	handleStatusRequestV2 func(id int) StatusResponseV2
 	handleStatusRequestV3 func(id int) StatusResponseV3
+	handlePlayerJoinRequest func(data PlayerJoinRequest) PlayerJoinResponse
 	handlePlayerJoin func(id int)
 }
 
@@ -62,20 +63,33 @@ type StatusResponseV3 struct {
 	PlayerSample []string
 }
 
-func (server *Server) OnStatusRequestV1(callback func(id int) StatusResponseV1) {
-	server.handleStatusRequestV1 = callback
+func (server *Server) OnStatusRequestV1(handler func(id int) StatusResponseV1) {
+	server.handleStatusRequestV1 = handler
 }
 
-func (server *Server) OnStatusRequestV2(callback func(id int) StatusResponseV2) {
-	server.handleStatusRequestV2 = callback
+func (server *Server) OnStatusRequestV2(handler func(id int) StatusResponseV2) {
+	server.handleStatusRequestV2 = handler
 }
 
-func (server *Server) OnStatusRequestV3(callback func(id int) StatusResponseV3) {
-	server.handleStatusRequestV3 = callback
+func (server *Server) OnStatusRequestV3(handler func(id int) StatusResponseV3) {
+	server.handleStatusRequestV3 = handler
 }
 
-func (server *Server) OnPlayerJoin(callback func(id int)) {
-	server.handlePlayerJoin = callback
+type PlayerJoinRequest struct {
+	ClientsideUsername string
+}
+
+type PlayerJoinResponse struct {
+	PreventResponse bool
+	Uuid uuid.UUID
+}
+
+func (server *Server) OnPlayerJoinRequest(handler func(data PlayerJoinRequest) PlayerJoinResponse) {
+	server.handlePlayerJoinRequest = handler
+}
+
+func (server *Server) OnPlayerJoin(handler func(id int)) {
+	server.handlePlayerJoin = handler
 }
 
 func (server *Server) AddConnection(id int, input io.Reader, output io.Writer, closeCallback func()) {
@@ -259,8 +273,15 @@ func (server *Server) ProcessPing(client *client, ping javaio.Packet_0051_Ping) 
 }
 
 func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) {
-	println(data.ClientsideUsername)
-	playerUuid := uuid.New()
+	res := server.handlePlayerJoinRequest(PlayerJoinRequest {
+		ClientsideUsername: data.ClientsideUsername,
+	})
+
+	if res.PreventResponse {
+		return
+	}
+	
+	playerUuid := res.Uuid
 
 	client.SendPacket(javaio.LoginSuccess {
 		Uuid: playerUuid,
