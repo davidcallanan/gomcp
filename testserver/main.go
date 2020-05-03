@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 import "net"
-import "github.com/davidcallanan/gomcp/javasock"
+import "github.com/davidcallanan/gomcp/javaserver"
 import "github.com/google/uuid"
 
 func main() {
@@ -10,77 +10,13 @@ func main() {
 	const onlinePlayers = 2
 	const version = "1.14-1.15"
 
-	server := javasock.NewServer()
 	listener, err := net.Listen("tcp4", "localhost:25565")
 	if err != nil {
 		panic(err)
 	}
 	defer listener.Close()
 
-	server.OnStatusRequestV1(func(_id int) javasock.StatusResponseV1 {
-		return javasock.StatusResponseV1 {
-			Description: "Hello, World!",
-			MaxPlayers: maxPlayers,
-			OnlinePlayers: onlinePlayers,
-		}
-	})
-
-	server.OnStatusRequestV2(func(_id int) javasock.StatusResponseV2 {
-		return javasock.StatusResponseV2 {
-			IsClientSupported: false,
-			Version: version,
-			Description: "§e§lHello, World!",
-			MaxPlayers: maxPlayers,
-			OnlinePlayers: onlinePlayers,
-		}
-	})
-
-	server.OnStatusRequestV3(func(_id int) javasock.StatusResponseV3 {
-		return javasock.StatusResponseV3 {
-			IsClientSupported: true,
-			Version: version,
-			Description: "§e§lHello, World!\n§r§aWelcome to this amazing server",
-			MaxPlayers: maxPlayers,
-			OnlinePlayers: onlinePlayers,
-			PlayerSample: []string {
-				"§aThis is",
-				"§cthe most",
-				"§8amazing thing",
-				"§9§lever!!!",
-			},
-		}
-	})
-
-	server.OnPlayerJoinRequest(func(data javasock.PlayerJoinRequest) javasock.PlayerJoinResponse {
-		fmt.Printf("Player %s has requested to join the game.\n", data.ClientsideUsername)
-		return javasock.PlayerJoinResponse {
-			Uuid: uuid.New(),
-		}
-	})
-
-	server.OnPlayerJoin(func(id int) {
-		fmt.Printf("Player with id %d has joined the game.\n", id)
-		server.SpawnPlayer(id, javasock.PlayerToSpawn {
-			EntityId: 123,
-			Uuid: uuid.New(),
-			X: 0,
-			Y: 70,
-			Z: 0,
-			Yaw: 0,
-			Pitch: 0,
-		})
-
-		
-		server.AddPlayerInfo(id, []javasock.PlayerInfoToAdd {
-			{ Uuid: uuid.New(), Username: "JohnDoe", Ping: 0 },
-			{ Uuid: uuid.New(), Username: "CatsEyebrows", Ping: 5 },
-			{ Uuid: uuid.New(), Username: "ElepantNostrel23", Ping: 500 },
-		})
-	})
-
 	fmt.Println("Test server is now listening...")
-
-	nextId := 0
 
 	for {
 		connection, err := listener.Accept()
@@ -88,12 +24,71 @@ func main() {
 			panic(err)
 		}
 
-		id := nextId
-		nextId++
 		fmt.Println("Accepted a connection!")
 
-		server.AddConnection(id, connection, connection, func() {
+		var conn *javaserver.Connection
+		conn = javaserver.NewConnection(connection, func() {
 			connection.Close()
+		}, javaserver.EventHandlers {
+			OnStatusRequestV1: func() javaserver.StatusResponseV1 {
+				return javaserver.StatusResponseV1 {
+					Description: "Hello, World!",
+					MaxPlayers: maxPlayers,
+					OnlinePlayers: onlinePlayers,
+				}
+			},
+		
+			OnStatusRequestV2: func() javaserver.StatusResponseV2 {
+				return javaserver.StatusResponseV2 {
+					IsClientSupported: false,
+					Version: version,
+					Description: "§e§lHello, World!",
+					MaxPlayers: maxPlayers,
+					OnlinePlayers: onlinePlayers,
+				}
+			},
+		
+			OnStatusRequestV3: func() javaserver.StatusResponseV3 {
+				return javaserver.StatusResponseV3 {
+					IsClientSupported: true,
+					Version: version,
+					Description: "§e§lHello, World!\n§r§aWelcome to this amazing server",
+					MaxPlayers: maxPlayers,
+					OnlinePlayers: onlinePlayers,
+					PlayerSample: []string {
+						"§aThis is",
+						"§cthe most",
+						"§8amazing thing",
+						"§9§lever!!!",
+					},
+				}
+			},
+		
+			OnPlayerJoinRequest: func(data javaserver.PlayerJoinRequest) javaserver.PlayerJoinResponse {
+				fmt.Printf("Player %s has requested to join the game.\n", data.ClientsideUsername)
+				return javaserver.PlayerJoinResponse {
+					Uuid: uuid.New(),
+				}
+			},
+		
+			OnPlayerJoin: func() {
+				fmt.Println("Player of whom I forget their username has joined the game.")
+				conn.SpawnPlayer(javaserver.PlayerToSpawn {
+					EntityId: 123,
+					Uuid: uuid.New(),
+					X: 0,
+					Y: 70,
+					Z: 0,
+					Yaw: 0,
+					Pitch: 0,
+				})
+
+				conn.AddPlayerInfo([]javaserver.PlayerInfoToAdd {
+					{ Uuid: uuid.New(), Username: "JohnDoe", Ping: 0 },
+					{ Uuid: uuid.New(), Username: "CatsEyebrows", Ping: 5 },
+					{ Uuid: uuid.New(), Username: "ElepantNostrel23", Ping: 500 },
+				})
+			},
 		})
 	}
 }
