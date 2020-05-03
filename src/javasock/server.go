@@ -349,14 +349,6 @@ func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) 
 	if server.handlePlayerJoin != nil {
 		server.handlePlayerJoin(client.id)
 	}
-
-	client.SendPacket(javaio.PlayerInfoAdd {
-		Players: []javaio.PlayerInfo {
-			{ Uuid: uuid.New(), Username: "JohnDoe", Ping: 0 },
-			{ Uuid: uuid.New(), Username: "CatsEyebrows", Ping: 5 },
-			{ Uuid: uuid.New(), Username: "ElepantNostrel23", Ping: 500 },
-		},
-	})
 }
 
 type PlayerToSpawn struct {
@@ -379,4 +371,26 @@ func (server *Server) SpawnPlayer(clientId int, player PlayerToSpawn) {
 		Yaw: uint8(math.Round(player.Yaw / (math.Pi * 2) * 255)),
 		Pitch: uint8(math.Round(player.Pitch / (math.Pi * 2) * 255)),
 	})
+}
+
+type PlayerInfoToAdd struct {
+	Uuid uuid.UUID
+	Username string
+	Ping int32
+}
+
+func (server *Server) AddPlayerInfo(clientId int, players []PlayerInfoToAdd) {
+	packet := javaio.PlayerInfoAdd {
+		Players: make([]javaio.PlayerInfo, len(players)),
+	}
+
+	for i, player := range players {
+		packet.Players[i] = javaio.PlayerInfo {
+			Uuid: player.Uuid,
+			Username: player.Username,
+			Ping: player.Ping,
+		}
+	}
+
+	server.clients[clientId].SendPacket(packet)
 }

@@ -69,6 +69,13 @@ func main() {
 			Yaw: 0,
 			Pitch: 0,
 		})
+
+		
+		server.AddPlayerInfo(id, []javasock.PlayerInfoToAdd {
+			{ Uuid: uuid.New(), Username: "JohnDoe", Ping: 0 },
+			{ Uuid: uuid.New(), Username: "CatsEyebrows", Ping: 5 },
+			{ Uuid: uuid.New(), Username: "ElepantNostrel23", Ping: 500 },
+		})
 	})
 
 	fmt.Println("Test server is now listening...")
