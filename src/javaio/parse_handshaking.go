@@ -36,7 +36,7 @@ func ParseHandshake(data *bufio.Reader) (result Handshake, err error) {
 	} else if (nextStateId == 2) {
 		nextState = StateLogin
 	} else {
-		err = &MalformedPacketError { fmt.Sprintf("Unrecognized next state id %d in handshake", nextStateId) }
+		err = MalformedPacketError { fmt.Sprintf("Unrecognized next state id %d in handshake", nextStateId) }
 		return
 	}
 

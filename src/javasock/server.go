@@ -104,7 +104,7 @@ func (server *Server) AddConnection(id int, input io.Reader, output io.Writer, c
 				continue
 			}
 
-			client.SendPacket(&javaio.KeepAlive {
+			client.SendPacket(javaio.KeepAlive {
 				Payload: now.Unix(),
 			})
 		}
@@ -120,10 +120,10 @@ func (server *Server) handleReceive(client *client) {
 
 	if err != nil {
 		switch err.(type) {
-		case *javaio.UnsupportedPayloadError:
+		case javaio.UnsupportedPayloadError:
 			println("Unsupported payload from client")
 			return
-		case *javaio.MalformedPacketError:
+		case javaio.MalformedPacketError:
 			println("Malformed packet from client.. closing connection")
 			client.close()
 			return
@@ -199,7 +199,7 @@ func (server *Server) ProcessStatusRequest(client *client, _ javaio.Packet_0051_
 		}
 	}
 
-	client.SendPacket(&javaio.Packet_0051_StatusResponse {
+	client.SendPacket(javaio.Packet_0051_StatusResponse {
 		Protocol: protocol,
 		Version: res.Version,
 		Description: res.Description,
@@ -225,7 +225,7 @@ func (server *Server) ProcessLegacyStatusRequest(client *client, _ javaio.Packet
 		protocol = int(client.ctx.Protocol)
 	}
 
-	client.SendPacket(&javaio.Packet_002E_StatusResponse {
+	client.SendPacket(javaio.Packet_002E_StatusResponse {
 		Protocol: protocol,
 		Version: res.Version,
 		Description: res.Description,
@@ -245,7 +245,7 @@ func (server *Server) ProcessVeryLegacyStatusRequest(client *client, _ javaio.Ve
 		return
 	}
 
-	client.SendPacket(&javaio.VeryLegacyStatusResponse {
+	client.SendPacket(javaio.VeryLegacyStatusResponse {
 		Description: res.Description,
 		MaxPlayers: res.MaxPlayers,
 		OnlinePlayers: res.OnlinePlayers,
@@ -253,7 +253,7 @@ func (server *Server) ProcessVeryLegacyStatusRequest(client *client, _ javaio.Ve
 }
 
 func (server *Server) ProcessPing(client *client, ping javaio.Packet_0051_Ping) {
-	client.SendPacket(&javaio.Packet_0051_Pong {
+	client.SendPacket(javaio.Packet_0051_Pong {
 		Payload: ping.Payload,
 	})
 }
@@ -262,14 +262,14 @@ func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) 
 	println(data.ClientsideUsername)
 	playerUuid := uuid.New()
 
-	client.SendPacket(&javaio.LoginSuccess {
+	client.SendPacket(javaio.LoginSuccess {
 		Uuid: playerUuid,
 		Username: data.ClientsideUsername,
 	})
 
 	client.ctx.State = javaio.StatePlay
 
-	client.SendPacket(&javaio.JoinGame {
+	client.SendPacket(javaio.JoinGame {
 		EntityId: 0,
 		Gamemode: javaio.GamemodeCreative,
 		Hardcore: false,
@@ -279,11 +279,11 @@ func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) 
 		EnableRespawnScreen: false,
 	})
 
-	client.SendPacket(&javaio.CompassPosition {
+	client.SendPacket(javaio.CompassPosition {
 		Location: javaio.BlockPosition { X: 0, Y: 64, Z: 0 },
 	})
 
-	client.SendPacket(&javaio.PlayerPositionAndLook {
+	client.SendPacket(javaio.PlayerPositionAndLook {
 		X: 0, Y: 64, Z: 0, Yaw: 0, Pitch: 0,
 	})
 
@@ -313,7 +313,7 @@ func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) 
 
 	for x := -3; x <= 3; x++ {
 		for z := -3; z <= 3; z++ {
-			client.SendPacket(&javaio.ChunkData {
+			client.SendPacket(javaio.ChunkData {
 				X: int32(x), Z: int32(z), IsNew: true,
 				Sections: [][]uint32 { nil, blocksA[:], blocksB[:], blocksC[:] },
 			})
@@ -324,7 +324,7 @@ func (server *Server) ProcessLoginStart(client *client, data javaio.LoginStart) 
 		server.handlePlayerJoin(client.id)
 	}
 
-	client.SendPacket(&javaio.PlayerInfoAdd {
+	client.SendPacket(javaio.PlayerInfoAdd {
 		Players: []javaio.PlayerInfo {
 			{ Uuid: uuid.New(), Username: "JohnDoe", Ping: 0 },
 			{ Uuid: uuid.New(), Username: "CatsEyebrows", Ping: 5 },

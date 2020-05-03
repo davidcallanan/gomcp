@@ -27,7 +27,7 @@ func ParseServerboundPacketUncompressed(data *bufio.Reader, state State) (result
 			preview, _ := data.Peek(2)
 		
 			if len(preview) < 2 {
-				err = &MalformedPacketError { "Stream ended abruptly" }
+				err = MalformedPacketError { "Stream ended abruptly" }
 				return
 			}
 
@@ -46,7 +46,7 @@ func ParseServerboundPacketUncompressed(data *bufio.Reader, state State) (result
 			preview, _ := data.Peek(1)
 			
 			if len(preview) < 1 {
-				err = &MalformedPacketError { "Stream ended abruptly" }
+				err = MalformedPacketError { "Stream ended abruptly" }
 				return
 			}
 
@@ -100,7 +100,7 @@ func ParseServerboundPacketUncompressed(data *bufio.Reader, state State) (result
 		case 0:
 			result, err = ParseHandshake(data)
 		default:
-			err = &UnsupportedPayloadError { fmt.Sprintf("Unrecognized packet id %d", packetId) }
+			err = UnsupportedPayloadError { fmt.Sprintf("Unrecognized packet id %d", packetId) }
 		}
 	case StateStatus:
 		switch packetId {
@@ -109,14 +109,14 @@ func ParseServerboundPacketUncompressed(data *bufio.Reader, state State) (result
 		case 1:
 			result, err = Read_0051_Ping(data)
 		default:
-			err = &UnsupportedPayloadError { fmt.Sprintf("Unrecognized packet id %d", packetId) }
+			err = UnsupportedPayloadError { fmt.Sprintf("Unrecognized packet id %d", packetId) }
 		}
 	case StateLogin:
 		switch packetId {
 		case 0:
 			result, err = ParseLoginStart(data)
 		default:
-			err = &UnsupportedPayloadError { fmt.Sprintf("Unrecognized packet id %d", packetId) }
+			err = UnsupportedPayloadError { fmt.Sprintf("Unrecognized packet id %d", packetId) }
 		}
 	case StatePlay:
 		// panic("Not implemented")

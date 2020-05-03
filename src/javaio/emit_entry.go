@@ -9,11 +9,11 @@ import "bufio"
 
 func EmitClientboundPacketUncompressed(packet interface{}, ctx ClientContext, output *bufio.Writer) {
 	if ctx.State == StatePreNetty {
-		Write_002E_StatusResponse(*packet.(*Packet_002E_StatusResponse), output)
+		Write_002E_StatusResponse(packet.(Packet_002E_StatusResponse), output)
 		output.Flush()
 		return
 	} else if ctx.State == StateVeryPreNetty {
-		WriteVeryLegacyStatusResponse(*packet.(*VeryLegacyStatusResponse), output)
+		WriteVeryLegacyStatusResponse(packet.(VeryLegacyStatusResponse), output)
 		output.Flush()
 		return
 	}
@@ -29,43 +29,43 @@ func EmitClientboundPacketUncompressed(packet interface{}, ctx ClientContext, ou
 		panic("Packet cannot be emitted in handshaking state")
 	case StateStatus:
 		switch packet := packet.(type) {
-		case *Packet_0051_StatusResponse:
+		case Packet_0051_StatusResponse:
 			packetId = 0x00
-			Write_0051_StatusResponse(*packet, dataWriter)
-		case *Packet_0051_Pong:
+			Write_0051_StatusResponse(packet, dataWriter)
+		case Packet_0051_Pong:
 			packetId = 0x01
-			Write_0051_Pong(*packet, dataWriter)
+			Write_0051_Pong(packet, dataWriter)
 		default:
 			panic("Packet cannot be emitted in status state")
 		}
 	case StateLogin:
 		switch packet := packet.(type) {
-		case *LoginSuccess:
+		case LoginSuccess:
 			packetId = 0x02
-			EmitLoginSuccess(*packet, dataWriter)	
+			EmitLoginSuccess(packet, dataWriter)	
 		default:
 			panic("Packet cannot be emitted in login state")
 		}
 	case StatePlay:
 		switch packet := packet.(type) {
-		case *KeepAlive:
+		case KeepAlive:
 			packetId = int32(PacketId_KeepAlive(ctx.Protocol))
-			WriteKeepAlive(*packet, dataWriter)
-		case *JoinGame:
+			WriteKeepAlive(packet, dataWriter)
+		case JoinGame:
 			packetId = int32(PacketId_JoinGame(ctx.Protocol))
-			WriteJoinGame(*packet, ctx, dataWriter)	
-		case *CompassPosition:
+			WriteJoinGame(packet, ctx, dataWriter)	
+		case CompassPosition:
 			packetId = int32(PacketId_CompassPosition(ctx.Protocol))
-			WriteCompassPosition(*packet, dataWriter)
-		case *PlayerPositionAndLook:
+			WriteCompassPosition(packet, dataWriter)
+		case PlayerPositionAndLook:
 			packetId = int32(PacketId_PlayerPositionAndLook(ctx.Protocol))
-			WritePlayerPositionAndLook(*packet, dataWriter)
-		case *ChunkData:
+			WritePlayerPositionAndLook(packet, dataWriter)
+		case ChunkData:
 			packetId = int32(PacketId_ChunkData(ctx.Protocol))
-			WriteChunkData(*packet, ctx, dataWriter)
-		case *PlayerInfoAdd:
+			WriteChunkData(packet, ctx, dataWriter)
+		case PlayerInfoAdd:
 			packetId = int32(PacketId_PlayerInfo(ctx.Protocol))
-			WritePlayerInfoAdd(*packet, dataWriter)
+			WritePlayerInfoAdd(packet, dataWriter)
 		default:
 			panic("Packet cannot be emitted in play state (likely because not implemented)")
 		}

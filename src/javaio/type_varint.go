@@ -10,10 +10,10 @@ func ReadVarInt(stream *bufio.Reader) (result int32, err error) {
 		byte_, readErr := stream.ReadByte()
 
 		if readErr != nil {
-			err = &MalformedPacketError { "VarInt ended abruptly" }
+			err = MalformedPacketError { "VarInt ended abruptly" }
 			return
 		} else if idx >= maxLength {
-			err = &MalformedPacketError { "VarInt exceeded max length "}
+			err = MalformedPacketError { "VarInt exceeded max length "}
 			return
 		}
 

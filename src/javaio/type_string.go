@@ -12,7 +12,7 @@ func ReadString(stream *bufio.Reader, maxRuneCount int) (result string, err erro
 	}
 
 	if int(strLength) > maxStrLength {
-		err = &MalformedPacketError { "String exceeded max rune count" } //*
+		err = MalformedPacketError { "String exceeded max rune count" } //*
 		return
 	}
 
@@ -20,14 +20,14 @@ func ReadString(stream *bufio.Reader, maxRuneCount int) (result string, err erro
 	n, _ := stream.Read(buf)
 	
 	if (n != int(strLength)) {
-		err = &MalformedPacketError { "String ended abruptly" }
+		err = MalformedPacketError { "String ended abruptly" }
 		return
 	}
 
 	result = string(buf)
 
 	if utf8.RuneCountInString(result) > maxRuneCount {
-		err = &MalformedPacketError { "String exceeded max rune count" }
+		err = MalformedPacketError { "String exceeded max rune count" }
 		return
 	}
 

@@ -9,7 +9,7 @@ func ReadUShort(stream *bufio.Reader) (result uint16, err error) {
 	n, _ := stream.Read(buf[:])
 
 	if n < size {
-		err = &MalformedPacketError { "Unsigned short ended abruptly" }
+		err = MalformedPacketError { "Unsigned short ended abruptly" }
 		return
 	}
 

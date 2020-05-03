@@ -9,7 +9,7 @@ func ReadLong(stream *bufio.Reader) (result int64, err error) {
 	n, _ := stream.Read(buf[:])
 
 	if n < size {
-		err = &MalformedPacketError { "Long ended abruptly" }
+		err = MalformedPacketError { "Long ended abruptly" }
 		return
 	}
 
