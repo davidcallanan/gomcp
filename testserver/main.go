@@ -5,10 +5,18 @@ import "net"
 import "github.com/davidcallanan/gomcp/javaserver"
 import "github.com/google/uuid"
 
+type Player struct {
+	conn *javaserver.Connection
+	uuid uuid.UUID
+	x float64
+	y float64
+	z float64
+}
+
 func main() {
 	const maxPlayers = 20
-	const onlinePlayers = 2
 	const version = "1.14-1.15"
+	players := make([]Player, 0, maxPlayers)
 
 	listener, err := net.Listen("tcp4", "localhost:25565")
 	if err != nil {
@@ -25,18 +33,16 @@ func main() {
 		}
 
 		fmt.Println("Accepted a connection!")
+		var player Player
 
-		var conn *javaserver.Connection
-		var guid uuid.UUID
-
-		conn = javaserver.NewConnection(connection, func() {
+		player.conn = javaserver.NewConnection(connection, func() {
 			connection.Close()
 		}, javaserver.EventHandlers {
 			OnStatusRequestV1: func() javaserver.StatusResponseV1 {
 				return javaserver.StatusResponseV1 {
 					Description: "Hello, World!",
 					MaxPlayers: maxPlayers,
-					OnlinePlayers: onlinePlayers,
+					OnlinePlayers: len(players),
 				}
 			},
 		
@@ -46,7 +52,7 @@ func main() {
 					Version: version,
 					Description: "§e§lHello, World!",
 					MaxPlayers: maxPlayers,
-					OnlinePlayers: onlinePlayers,
+					OnlinePlayers: len(players),
 				}
 			},
 		
@@ -56,7 +62,7 @@ func main() {
 					Version: version,
 					Description: "§e§lHello, World!\n§r§aWelcome to this amazing server",
 					MaxPlayers: maxPlayers,
-					OnlinePlayers: onlinePlayers,
+					OnlinePlayers: len(players),
 					PlayerSample: []string {
 						"§aThis is",
 						"§cthe most",
@@ -68,24 +74,33 @@ func main() {
 		
 			OnPlayerJoinRequest: func(data javaserver.PlayerJoinRequest) javaserver.PlayerJoinResponse {
 				fmt.Printf("Player %s has requested to join the game.\n", data.ClientsideUsername)
-				guid = uuid.New()
+				
+				if len(players) >= maxPlayers {
+					fmt.Println("Player has been silently denied to join due to player limit.")
+					return javaserver.PlayerJoinResponse {
+						PreventResponse: true,
+					}
+				}
+				
+				players = append(players, player)
+				player.uuid = uuid.New()
 				return javaserver.PlayerJoinResponse {
-					Uuid: guid,
+					Uuid: player.uuid,
 				}
 			},
 		
 			OnPlayerJoin: func() {
 				fmt.Println("Player of whom I forget their username has joined the game.")
 
-				conn.AddPlayerInfo([]javaserver.PlayerInfoToAdd {
-					{ Uuid: guid, Username: "JohnDoe", Ping: 0 },
+				player.conn.AddPlayerInfo([]javaserver.PlayerInfoToAdd {
+					{ Uuid: player.uuid, Username: "JohnDoe", Ping: 0 },
 					{ Uuid: uuid.New(), Username: "CatsEyebrows", Ping: 5 },
 					{ Uuid: uuid.New(), Username: "ElepantNostrel23", Ping: 500 },
 				})
 
-				conn.SpawnPlayer(javaserver.PlayerToSpawn {
+				player.conn.SpawnPlayer(javaserver.PlayerToSpawn {
 					EntityId: 123,
-					Uuid: guid,
+					Uuid: player.uuid,
 					X: 0,
 					Y: 70,
 					Z: 0,
