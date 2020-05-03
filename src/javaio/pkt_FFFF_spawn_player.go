@@ -14,16 +14,9 @@ type Packet_SpawnPlayer struct {
 }
 
 func PacketId_SpawnPlayer(protocol uint) int32 {
-	// TODO: this is an approximation
-	if protocol >= 0x0286 {
-		// 1.15
-		return 0x05
-	} else {
-		// 1.14
-		return 0x04
-	}
+	// 1.15 and 1.14
 	// todo: older versions not supported
-	return -1
+	return 0x05
 }
 
 func Write_SpawnPlayer(data Packet_SpawnPlayer, ctx ClientContext, stream *bufio.Writer) {
