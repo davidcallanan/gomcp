@@ -27,6 +27,8 @@ func main() {
 		fmt.Println("Accepted a connection!")
 
 		var conn *javaserver.Connection
+		var guid uuid.UUID
+
 		conn = javaserver.NewConnection(connection, func() {
 			connection.Close()
 		}, javaserver.EventHandlers {
@@ -66,27 +68,29 @@ func main() {
 		
 			OnPlayerJoinRequest: func(data javaserver.PlayerJoinRequest) javaserver.PlayerJoinResponse {
 				fmt.Printf("Player %s has requested to join the game.\n", data.ClientsideUsername)
+				guid = uuid.New()
 				return javaserver.PlayerJoinResponse {
-					Uuid: uuid.New(),
+					Uuid: guid,
 				}
 			},
 		
 			OnPlayerJoin: func() {
 				fmt.Println("Player of whom I forget their username has joined the game.")
+
+				conn.AddPlayerInfo([]javaserver.PlayerInfoToAdd {
+					{ Uuid: guid, Username: "JohnDoe", Ping: 0 },
+					{ Uuid: uuid.New(), Username: "CatsEyebrows", Ping: 5 },
+					{ Uuid: uuid.New(), Username: "ElepantNostrel23", Ping: 500 },
+				})
+
 				conn.SpawnPlayer(javaserver.PlayerToSpawn {
 					EntityId: 123,
-					Uuid: uuid.New(),
+					Uuid: guid,
 					X: 0,
 					Y: 70,
 					Z: 0,
 					Yaw: 0,
 					Pitch: 0,
-				})
-
-				conn.AddPlayerInfo([]javaserver.PlayerInfoToAdd {
-					{ Uuid: uuid.New(), Username: "JohnDoe", Ping: 0 },
-					{ Uuid: uuid.New(), Username: "CatsEyebrows", Ping: 5 },
-					{ Uuid: uuid.New(), Username: "ElepantNostrel23", Ping: 500 },
 				})
 			},
 		})
