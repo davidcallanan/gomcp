@@ -26,7 +26,7 @@ func PacketId_SpawnPlayer(protocol uint) int32 {
 	return -1
 }
 
-func Write_SpawnPlayer(data Packet_SpawnPlayer, stream *bufio.Writer) {
+func Write_SpawnPlayer(data Packet_SpawnPlayer, ctx ClientContext, stream *bufio.Writer) {
 	WriteVarInt(data.EntityId, stream)
 	WriteUuidBin(data.Uuid, stream)
 	WriteDouble(data.X, stream)
@@ -34,4 +34,10 @@ func Write_SpawnPlayer(data Packet_SpawnPlayer, stream *bufio.Writer) {
 	WriteDouble(data.Z, stream)
 	WriteUByte(data.Yaw, stream)
 	WriteUByte(data.Pitch, stream)
+
+	if ctx.Protocol < 0x0286 {
+		// 1.14 approximation
+		// entity metadata must be sent in this version
+		WriteUByte(0xff, stream) // end of entity metadata; no metadata sent for now
+	}
 }
