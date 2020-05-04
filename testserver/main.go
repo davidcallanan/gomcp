@@ -14,6 +14,8 @@ type Player struct {
 	x float64
 	y float64
 	z float64
+	yaw float32
+	pitch float32
 }
 
 func main() {
@@ -99,7 +101,7 @@ func main() {
 				player.x = 0
 				player.y = 64
 				player.z = 0
-				player.theNextEid = -1
+				player.theNextEid = 0
 				player.playerEids = make(map[uuid.UUID]int32)
 
 				player.conn.AddPlayerInfo([]javaserver.PlayerInfoToAdd {
@@ -123,6 +125,9 @@ func main() {
 					})
 
 					if p.uuid != player.uuid {
+						// Create other player eids for self
+						player.playerEids[p.uuid] = player.nextEid()
+
 						// Spawn self for already connected players
 						p.conn.SpawnPlayer(javaserver.PlayerToSpawn {
 							EntityId: p.playerEids[player.uuid],
@@ -133,9 +138,6 @@ func main() {
 							Yaw: 0,
 							Pitch: 0,
 						})
-
-						// Create other player eids for self
-						player.playerEids[p.uuid] = player.nextEid()
 
 						// Spawn already connected players for self
 						player.conn.SpawnPlayer(javaserver.PlayerToSpawn {
@@ -151,24 +153,34 @@ func main() {
 				}
 			},
 			OnPlayerMove: func(data javaserver.PlayerMove) {
-				// prevX := player.x
-				// prevY := player.y
-				// prevZ := player.z
-				player.x = data.X
-				player.y = data.Y
-				player.z = data.Z
+				prevX := player.x
+				prevY := player.y
+				prevZ := player.z
+				
+				if data.HasPos {
+					player.x = data.X
+					player.y = data.Y
+					player.z = data.Z
+				}
+
+				if data.HasLook {
+					player.yaw = data.Yaw
+					player.pitch = data.Pitch
+				}
 
 				for _, p := range players {
 					if p.uuid == player.uuid {
 						return
 					}
 					
-					// p.conn.TranslateEntity(javaserver.EntityTranslation {
-					// 	EntityId: p.playerEids[player.uuid],
-					// 	DeltaX: player.x - prevX,
-					// 	DeltaY: player.y - prevY,
-					// 	DeltaZ: player.z - prevZ,
-					// })
+					p.conn.TranslateEntity(javaserver.EntityTranslation {
+						EntityId: p.playerEids[player.uuid],
+						DeltaX: player.x - prevX,
+						DeltaY: player.y - prevY,
+						DeltaZ: player.z - prevZ,
+						Yaw: player.yaw,
+						Pitch: player.pitch,
+					})
 				}
 			},
 		})
