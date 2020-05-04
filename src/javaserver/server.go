@@ -154,8 +154,12 @@ func (conn *Connection) handleReceive() {
 		conn.processLoginStart(packet)
 
 		// Play
-	case javaio.Packet_PlayerPositionAndLookServerbound:
-		conn.processMove(packet)
+	case javaio.Packet_PlayerPosSb:
+		conn.processMovePos(packet)
+	case javaio.Packet_PlayerLookSb:
+		conn.processMoveLook(packet)
+	case javaio.Packet_PlayerPosAndLookSb:
+		conn.processMoveAll(packet)
 
 		// Pre-Netty
 	case javaio.Packet_002E_StatusRequest:
@@ -342,7 +346,15 @@ func (conn *Connection) processLoginStart(data javaio.LoginStart) {
 	}
 }
 
-func (conn *Connection) processMove(data javaio.Packet_PlayerPositionAndLookServerbound) {
+func (conn *Connection) processMovePos(data javaio.Packet_PlayerPosSb) {
+	fmt.Printf("%v\n", data)
+}
+
+func (conn *Connection) processMoveLook(data javaio.Packet_PlayerLookSb) {
+	fmt.Printf("%v\n", data)
+}
+
+func (conn *Connection) processMoveAll(data javaio.Packet_PlayerPosAndLookSb) {
 	fmt.Printf("%v\n", data)
 }
 

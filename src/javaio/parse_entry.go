@@ -120,8 +120,12 @@ func ParseServerboundPacketUncompressed(data *bufio.Reader, ctx ClientContext, s
 		}
 	case StatePlay:
 		switch packetId {
-		case int32(PacketId_PlayerPositionAndLookServerbound(ctx.Protocol)):
-			result, err = Read_PlayerPositionAndLookServerbound(data)
+		case int32(PacketId_PlayerPosSb(ctx.Protocol)):
+			result, err = Read_PlayerPosSb(data)
+		case int32(PacketId_PlayerLookSb(ctx.Protocol)):
+			result, err = Read_PlayerLookSb(data)
+		case int32(PacketId_PlayerPosAndLookSb(ctx.Protocol)):
+			result, err = Read_PlayerPosAndLookSb(data)
 		default:
 			err = UnsupportedPayloadError { fmt.Sprintf("Unrecognized packet id %d", packetId) }
 		}
