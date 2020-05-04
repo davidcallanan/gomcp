@@ -94,11 +94,15 @@ func main() {
 			OnPlayerJoin: func() {
 				fmt.Println("Player of whom I forget their username has joined the game.")
 
-				// player.conn.AddPlayerInfo([]javaserver.PlayerInfoToAdd {
-				// 	{ Uuid: player.uuid, Username: "JohnDoe", Ping: 0 },
-				// 	{ Uuid: uuid.New(), Username: "CatsEyebrows", Ping: 5 },
-				// 	{ Uuid: uuid.New(), Username: "ElepantNostrel23", Ping: 500 },
-				// })
+				player.x = 0
+				player.y = 64
+				player.z = 0
+
+				player.conn.AddPlayerInfo([]javaserver.PlayerInfoToAdd {
+					{ Uuid: uuid.New(), Username: "JohnDoe", Ping: 0 },
+					{ Uuid: uuid.New(), Username: "CatsEyebrows", Ping: 5 },
+					{ Uuid: uuid.New(), Username: "ElepantNostrel23", Ping: 500 },
+				})
 
 				for _, p := range players {
 					// Add self to tab list for other players
@@ -116,9 +120,9 @@ func main() {
 						p.conn.SpawnPlayer(javaserver.PlayerToSpawn {
 							EntityId: 123,
 							Uuid: player.uuid,
-							X: 0,
-							Y: 64,
-							Z: 0,
+							X: player.x,
+							Y: player.y,
+							Z: player.z,
 							Yaw: 0,
 							Pitch: 0,
 						})	
@@ -127,9 +131,9 @@ func main() {
 						player.conn.SpawnPlayer(javaserver.PlayerToSpawn {
 							EntityId: 123,
 							Uuid: p.uuid,
-							X: 0,
-							Y: 64,
-							Z: 0,
+							X: p.x,
+							Y: p.y,
+							Z: p.z,
 							Yaw: 0,
 							Pitch: 0,
 						})
@@ -137,6 +141,9 @@ func main() {
 				}
 			},
 			OnPlayerMove: func(data javaserver.PlayerMove) {
+				player.x = data.X
+				player.y = data.Y
+				player.z = data.Z
 				fmt.Printf("%+v\n", data)
 			},
 		})
