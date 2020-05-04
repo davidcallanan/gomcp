@@ -417,8 +417,8 @@ func (conn *Connection) SpawnPlayer(player PlayerToSpawn) {
 		X: player.X,
 		Y: player.Y,
 		Z: player.Z,
-		Yaw: uint8(math.Round(float64(player.Yaw) / (math.Pi * 2) * 255)),
-		Pitch: uint8(math.Round(float64(player.Pitch) / (math.Pi * 2) * 255)),
+		Yaw: uint8(math.Round(float64(player.Yaw) / 360 * 255)),
+		Pitch: uint8(math.Round(float64(player.Pitch) / 360 * 255)),
 	})
 }
 
@@ -461,7 +461,7 @@ func (conn *Connection) TranslateEntity(data EntityTranslation) {
 		DeltaX: int16(math.Round(data.DeltaX * 4096)),
 		DeltaY: int16(math.Round(data.DeltaY * 4096)),
 		DeltaZ: int16(math.Round(data.DeltaZ * 4096)),
-		Yaw: uint8(math.Round(float64(data.Yaw) / (math.Pi * 2) * 255)),
-		Pitch: uint8(math.Round(float64(data.Pitch) / (math.Pi * 2) * 255)),
+		Yaw: uint8(math.Round(float64(data.Yaw) / 360 * 255)),
+		Pitch: uint8(math.Round(float64(data.Pitch) / 360 * 255)),
 	})
 }
