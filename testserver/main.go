@@ -9,6 +9,8 @@ type Player struct {
 	conn *javaserver.Connection
 	uuid uuid.UUID
 	username string
+	playerEids map[uuid.UUID]int32
+	theNextEid int32
 	x float64
 	y float64
 	z float64
@@ -97,6 +99,8 @@ func main() {
 				player.x = 0
 				player.y = 64
 				player.z = 0
+				player.theNextEid = -1
+				player.playerEids = make(map[uuid.UUID]int32)
 
 				player.conn.AddPlayerInfo([]javaserver.PlayerInfoToAdd {
 					{ Uuid: uuid.New(), Username: "JohnDoe", Ping: 0 },
@@ -105,6 +109,9 @@ func main() {
 				})
 
 				for _, p := range players {
+					// Create self eid for other players
+					p.playerEids[player.uuid] = p.nextEid()
+
 					// Add self to tab list for other players
 					p.conn.AddPlayerInfo([]javaserver.PlayerInfoToAdd {
 						{ Uuid: player.uuid, Username: player.username, Ping: 0 },
@@ -118,18 +125,21 @@ func main() {
 					if p.uuid != player.uuid {
 						// Spawn self for already connected players
 						p.conn.SpawnPlayer(javaserver.PlayerToSpawn {
-							EntityId: 123,
+							EntityId: p.playerEids[player.uuid],
 							Uuid: player.uuid,
 							X: player.x,
 							Y: player.y,
 							Z: player.z,
 							Yaw: 0,
 							Pitch: 0,
-						})	
+						})
+
+						// Create other player eids for self
+						player.playerEids[p.uuid] = player.nextEid()
 
 						// Spawn already connected players for self
 						player.conn.SpawnPlayer(javaserver.PlayerToSpawn {
-							EntityId: 123,
+							EntityId: player.playerEids[p.uuid],
 							Uuid: p.uuid,
 							X: p.x,
 							Y: p.y,
@@ -141,11 +151,31 @@ func main() {
 				}
 			},
 			OnPlayerMove: func(data javaserver.PlayerMove) {
+				prevX := player.x
+				prevY := player.y
+				prevZ := player.z
 				player.x = data.X
 				player.y = data.Y
 				player.z = data.Z
-				fmt.Printf("%+v\n", data)
+
+				for _, p := range players {
+					if p.uuid == player.uuid {
+						return
+					}
+					
+					p.conn.TranslateEntity(javaserver.EntityTranslation {
+						EntityId: p.playerEids[player.uuid],
+						DeltaX: player.x - prevX,
+						DeltaY: player.y - prevY,
+						DeltaZ: player.z - prevZ,
+					})
+				}
 			},
 		})
 	}
+}
+
+func (player *Player) nextEid() int32 {
+	player.theNextEid++
+	return player.theNextEid
 }

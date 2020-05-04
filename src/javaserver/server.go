@@ -406,8 +406,8 @@ type PlayerToSpawn struct {
 	X float64
 	Y float64
 	Z float64
-	Yaw float64
-	Pitch float64
+	Yaw float32
+	Pitch float32
 }
 
 func (conn *Connection) SpawnPlayer(player PlayerToSpawn) {
@@ -417,8 +417,8 @@ func (conn *Connection) SpawnPlayer(player PlayerToSpawn) {
 		X: player.X,
 		Y: player.Y,
 		Z: player.Z,
-		Yaw: uint8(math.Round(player.Yaw / (math.Pi * 2) * 255)),
-		Pitch: uint8(math.Round(player.Pitch / (math.Pi * 2) * 255)),
+		Yaw: uint8(math.Round(float64(player.Yaw) / (math.Pi * 2) * 255)),
+		Pitch: uint8(math.Round(float64(player.Pitch) / (math.Pi * 2) * 255)),
 	})
 }
 
@@ -442,4 +442,26 @@ func (conn *Connection) AddPlayerInfo(players []PlayerInfoToAdd) {
 	}
 
 	conn.send(packet)
+}
+
+type EntityTranslation struct {
+	EntityId int32
+	DeltaX float64
+	DeltaY float64
+	DeltaZ float64
+	Yaw float32
+	Pitch float32
+	OnGround bool
+}
+
+func (conn *Connection) TranslateEntity(data EntityTranslation) {
+	// TODO: 8 block bound check
+	conn.send(javaio.Packet_EntityTranslate {
+		EntityId: data.EntityId,
+		DeltaX: int16(math.Round(data.DeltaX * 4096)),
+		DeltaY: int16(math.Round(data.DeltaY * 4096)),
+		DeltaZ: int16(math.Round(data.DeltaZ * 4096)),
+		Yaw: uint8(math.Round(float64(data.Yaw) / (math.Pi * 2) * 255)),
+		Pitch: uint8(math.Round(float64(data.Pitch) / (math.Pi * 2) * 255)),
+	})
 }
