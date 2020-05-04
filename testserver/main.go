@@ -151,9 +151,9 @@ func main() {
 				}
 			},
 			OnPlayerMove: func(data javaserver.PlayerMove) {
-				prevX := player.x
-				prevY := player.y
-				prevZ := player.z
+				// prevX := player.x
+				// prevY := player.y
+				// prevZ := player.z
 				player.x = data.X
 				player.y = data.Y
 				player.z = data.Z
@@ -163,12 +163,12 @@ func main() {
 						return
 					}
 					
-					p.conn.TranslateEntity(javaserver.EntityTranslation {
-						EntityId: p.playerEids[player.uuid],
-						DeltaX: player.x - prevX,
-						DeltaY: player.y - prevY,
-						DeltaZ: player.z - prevZ,
-					})
+					// p.conn.TranslateEntity(javaserver.EntityTranslation {
+					// 	EntityId: p.playerEids[player.uuid],
+					// 	DeltaX: player.x - prevX,
+					// 	DeltaY: player.y - prevY,
+					// 	DeltaZ: player.z - prevZ,
+					// })
 				}
 			},
 		})
