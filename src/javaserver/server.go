@@ -1,7 +1,6 @@
 package javaserver
 
 import "io"
-import "fmt"
 import "math"
 import "time"
 import "bufio"
@@ -23,6 +22,7 @@ type EventHandlers struct {
 	OnStatusRequestV3 func() StatusResponseV3
 	OnPlayerJoinRequest func(data PlayerJoinRequest) PlayerJoinResponse
 	OnPlayerJoin func()
+	OnPlayerMove func(data PlayerMove)
 }
 
 func NewConnection(stream io.ReadWriter, endStream func(), eventHandlers EventHandlers) *Connection {
@@ -111,6 +111,17 @@ type PlayerJoinRequest struct {
 type PlayerJoinResponse struct {
 	PreventResponse bool
 	Uuid uuid.UUID
+}
+
+type PlayerMove struct {
+	HasPos bool
+	HasLook bool
+	X float64
+	Y float64
+	Z float64
+	Yaw float32
+	Pitch float32
+	OnGround bool
 }
 
 func (conn *Connection) send(packet interface{}) {
@@ -347,15 +358,46 @@ func (conn *Connection) processLoginStart(data javaio.LoginStart) {
 }
 
 func (conn *Connection) processMovePos(data javaio.Packet_PlayerPosSb) {
-	fmt.Printf("%v\n", data)
+	if conn.eventHandlers.OnPlayerMove == nil {
+		return
+	}
+
+	conn.eventHandlers.OnPlayerMove(PlayerMove {
+		HasPos: true,
+		HasLook: false,
+		X: data.X,
+		Y: data.Y,
+		Z: data.Z,
+	})
 }
 
 func (conn *Connection) processMoveLook(data javaio.Packet_PlayerLookSb) {
-	fmt.Printf("%v\n", data)
+	if conn.eventHandlers.OnPlayerMove == nil {
+		return
+	}
+
+	conn.eventHandlers.OnPlayerMove(PlayerMove {
+		HasPos: false,
+		HasLook: true,
+		Yaw: data.Yaw,
+		Pitch: data.Pitch,
+	})
 }
 
 func (conn *Connection) processMoveAll(data javaio.Packet_PlayerPosAndLookSb) {
-	fmt.Printf("%v\n", data)
+	if conn.eventHandlers.OnPlayerMove == nil {
+		return
+	}
+
+	conn.eventHandlers.OnPlayerMove(PlayerMove {
+		HasPos: true,
+		HasLook: true,
+		X: data.X,
+		Y: data.Y,
+		Z: data.Z,
+		Yaw: data.Yaw,
+		Pitch: data.Pitch,
+	})
 }
 
 type PlayerToSpawn struct {

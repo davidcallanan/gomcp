@@ -136,6 +136,9 @@ func main() {
 					}
 				}
 			},
+			OnPlayerMove: func(data javaserver.PlayerMove) {
+				fmt.Printf("%+v\n", data)
+			},
 		})
 	}
 }
