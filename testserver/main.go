@@ -179,7 +179,7 @@ func main() {
 
 					for _, p := range players {
 						if p.uuid == player.uuid {
-							return
+							continue
 						}
 						
 						p.conn.TranslateEntity(javaserver.EntityTranslation {
