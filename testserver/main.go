@@ -101,7 +101,7 @@ func main() {
 				player.x = 0
 				player.y = 64
 				player.z = 0
-				player.theNextEid = 0
+				player.theNextEid = 10
 				player.playerEids = make(map[uuid.UUID]int32)
 
 				player.conn.AddPlayerInfo([]javaserver.PlayerInfoToAdd {
@@ -111,9 +111,6 @@ func main() {
 				})
 
 				for _, p := range players {
-					// Create self eid for other players
-					p.playerEids[player.uuid] = p.nextEid()
-
 					// Add self to tab list for other players
 					p.conn.AddPlayerInfo([]javaserver.PlayerInfoToAdd {
 						{ Uuid: player.uuid, Username: player.username, Ping: 0 },
@@ -124,9 +121,12 @@ func main() {
 						{ Uuid: p.uuid, Username: player.username, Ping: 0 },
 					})
 
-					if p.uuid != player.uuid {
+					if p.uuid != player.uuid {	
 						// Create other player eids for self
 						player.playerEids[p.uuid] = player.nextEid()
+
+						// Create self eid for other players
+						p.playerEids[player.uuid] = p.nextEid()
 
 						// Spawn self for already connected players
 						p.conn.SpawnPlayer(javaserver.PlayerToSpawn {
@@ -135,8 +135,8 @@ func main() {
 							X: player.x,
 							Y: player.y,
 							Z: player.z,
-							Yaw: 0,
-							Pitch: 0,
+							Yaw: player.yaw,
+							Pitch: player.pitch,
 						})
 
 						// Spawn already connected players for self
@@ -156,7 +156,7 @@ func main() {
 				prevX := player.x
 				prevY := player.y
 				prevZ := player.z
-				
+
 				if data.HasPos {
 					player.x = data.X
 					player.y = data.Y
