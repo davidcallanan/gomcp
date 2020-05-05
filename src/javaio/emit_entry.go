@@ -72,6 +72,9 @@ func EmitClientboundPacketUncompressed(packet interface{}, ctx ClientContext, ou
 		case Packet_EntityTranslate:
 			packetId = int32(PacketId_EntityTranslate(ctx.Protocol))
 			Write_EntityTranslate(packet, dataWriter)
+		case Packet_EntityVelocity:
+			packetId = int32(PacketId_EntityVelocity(ctx.Protocol))
+			Write_EntityVelocity(packet, dataWriter)
 		default:
 			panic("Packet cannot be emitted in play state (likely because not implemented)")
 		}

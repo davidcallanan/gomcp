@@ -177,6 +177,16 @@ func main() {
 					
 					player.onGround = data.OnGround
 
+					// Currently unsafely assuming 1 tick between each move packet.
+					// Must be multiplied by 20 to obtain velocity per second instead of per tick.
+					// Velocity multiplier can be tweaked to determine how much trust we put into that velocity for the next tick.
+					// Since Minecraft only calculates physics every tick, we are probably safe to leave this at 1.
+					// However, inconsistency in latency may be a factor to reduce this value.
+					velocityMultiplier := 10.0
+					velX := (player.x - prevX) * 20 * velocityMultiplier
+					velY := (player.y - prevY) * 20 * velocityMultiplier
+					velZ := (player.z - prevZ) * 20 * velocityMultiplier
+
 					for _, p := range players {
 						if p.uuid == player.uuid {
 							continue
@@ -190,6 +200,13 @@ func main() {
 							Yaw: player.yaw,
 							Pitch: player.pitch,
 							OnGround: player.onGround,
+						})
+
+						p.conn.SetEntityVelocity(javaserver.EntityVelocity {
+							EntityId: p.playerEids[player.uuid],
+							X: velX,
+							Y: velY,
+							Z: velZ,
 						})
 					}
 				},

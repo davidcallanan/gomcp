@@ -463,5 +463,23 @@ func (conn *Connection) TranslateEntity(data EntityTranslation) {
 		DeltaZ: int16(math.Round(data.DeltaZ * 4096)),
 		Yaw: uint8(math.Round(float64(data.Yaw) / 360 * 255)),
 		Pitch: uint8(math.Round(float64(data.Pitch) / 360 * 255)),
+		OnGround: data.OnGround,
+	})
+}
+
+type EntityVelocity struct {
+	EntityId int32
+	X float64
+	Y float64
+	Z float64
+}
+
+func (conn *Connection) SetEntityVelocity(data EntityVelocity) {
+	// TODO: bound check
+	conn.send(javaio.Packet_EntityVelocity {
+		EntityId: data.EntityId,
+		X: int16(math.Round(data.X * 400)),
+		Y: int16(math.Round(data.Y * 400)),
+		Z: int16(math.Round(data.Z * 400)),
 	})
 }
